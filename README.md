@@ -1,5 +1,9 @@
 # SkillBot - AI Agentic Runtime
 
+[![Release](https://img.shields.io/github/v/release/harshil-sh/SkillBot)](https://github.com/harshil-sh/SkillBot/releases)
+[![Stars](https://img.shields.io/github/stars/harshil-sh/SkillBot)](https://github.com/harshil-sh/SkillBot/stargazers)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 ## Project Overview
 
 **SkillBot** is a production-ready AI agent framework built with C# and .NET 10. It provides a clean, extensible architecture for building intelligent agents that can use tools, maintain conversation history, and coordinate multiple specialized agents to solve complex tasks.
