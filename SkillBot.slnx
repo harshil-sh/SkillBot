@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SkillBot.Console/SkillBot.Console.csproj" />
+  <Project Path="SkillBot.Core/SkillBot.Core.csproj" />
+  <Project Path="SkillBot.Infrastructure/SkillBot.Infrastructure.csproj" />
+  <Project Path="SkillBot.Plugins/SkillBot.Plugins.csproj" />
+</Solution>

@@ -1,0 +1,196 @@
+# SkillBot .gitignore
+
+# ====================
+# .NET / C# / Visual Studio
+# ====================
+
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio cache/options
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+## Rider
+.idea/
+*.sln.iml
+
+## ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+## Build Results of NuGet
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+
+## Test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+
+# ====================
+# SkillBot Specific
+# ====================
+
+## SQLite Databases (runtime generated)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+## User Secrets (dev environment)
+secrets.json
+appsettings.Development.json
+appsettings.Local.json
+
+## Logs
+*.log
+logs/
+
+## Temporary files
+*.tmp
+*.temp
+temp/
+
+## Plugin assemblies (user-added, not core)
+plugins/**/*.dll
+plugins/**/*.pdb
+!SkillBot.Plugins/  # Keep our own plugin source code
+
+# ====================
+# AI Coding Agent Docs (PRIVATE - Vibe/Cursor/etc.)
+# ====================
+
+## Internal architecture and development docs for AI agents
+docs/internal/
+docs/vibe/
+docs/ai-agent/
+.vibe/
+.cursor/
+
+## AI-specific context files
+ARCHITECTURE.md
+API-REFERENCE.md
+CODEBASE-CONTEXT.md
+DEVELOPMENT-GUIDE.md
+AI-CONTEXT.md
+
+## Keep public docs (for users and contributors)
+!docs/README.md
+!docs/PLUGIN-DEVELOPMENT.md
+!docs/DEPLOYMENT.md
+!docs/CONTRIBUTING.md
+
+# ====================
+# Security & Credentials
+# ====================
+
+## API Keys
+*.env
+.env
+.env.*
+!.env.example
+
+## Certificates
+*.pfx
+*.p12
+*.key
+*.pem
+
+## Configuration with secrets
+appsettings.*.json
+!appsettings.json
+!appsettings.example.json
+
+# ====================
+# Operating System
+# ====================
+
+## Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+## macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+## Linux
+*~
+.directory
+.Trash-*
+
+# ====================
+# Development Tools
+# ====================
+
+## JetBrains Rider
+.idea/
+*.sln.iml
+
+## VS Code
+.vscode/
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+## Backup files
+*.bak
+*.backup
+*.old
+
+# ====================
+# Documentation Build
+# ====================
+
+## DocFX or similar
+_site/
+api/
+obj/
+
+# ====================
+# Package Managers
+# ====================
+
+## npm (if using for any tooling)
+node_modules/
+package-lock.json
+
+## NuGet
+*.nupkg
+*.snupkg
+
+# ====================
+# Custom Ignores
+# ====================
+
+## Add project-specific ignores below this line
