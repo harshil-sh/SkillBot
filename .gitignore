@@ -89,10 +89,15 @@ plugins/**/*.pdb
 
 ## Internal architecture and development docs for AI agents
 docs/internal/
+docs-internal/
 docs/vibe/
 docs/ai-agent/
 .vibe/
 .cursor/
+
+## Claude Code context file
+CLAUDE.md
+docs-internal/CLAUDE.md
 
 ## AI-specific context files
 ARCHITECTURE.md

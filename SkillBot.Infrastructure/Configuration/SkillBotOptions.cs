@@ -52,4 +52,9 @@ public class SkillBotOptions
     /// SQLite database file path (used when MemoryProvider = "SQLite")
     /// </summary>
     public string SqliteDatabasePath { get; set; } = "skillbot.db";
+
+    /// <summary>
+    /// Caching configuration
+    /// </summary>
+    public CachingOptions Caching { get; set; } = new();
 }

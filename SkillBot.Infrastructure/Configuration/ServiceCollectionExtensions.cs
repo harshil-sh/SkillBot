@@ -8,6 +8,8 @@ using SkillBot.Infrastructure.Memory;
 using SkillBot.Infrastructure.Plugins;
 using SkillBot.Infrastructure.MultiAgent;
 using SkillBot.Infrastructure.MultiAgent.Agents;
+using SkillBot.Infrastructure.Cache;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace SkillBot.Infrastructure.Configuration;
 
@@ -61,15 +63,28 @@ public static class ServiceCollectionExtensions
         // Register memory provider based on configuration
         RegisterMemoryProvider(services, options);
 
+        // Add caching
+        AddCaching(services, options.Caching);
+
         // Register core services
         services.AddSingleton<IPluginProvider, DynamicPluginProvider>();
         services.AddSingleton<IAgentEngine, SemanticKernelEngine>();
 
-        // Get chat completion service from kernel
-        services.AddSingleton(sp =>
+        // Get chat completion service from kernel and wrap with caching if enabled
+        services.AddSingleton<Microsoft.SemanticKernel.ChatCompletion.IChatCompletionService>(sp =>
         {
             var kernel = sp.GetRequiredService<Kernel>();
-            return kernel.GetRequiredService<Microsoft.SemanticKernel.ChatCompletion.IChatCompletionService>();
+            var innerService = kernel.GetRequiredService<Microsoft.SemanticKernel.ChatCompletion.IChatCompletionService>();
+
+            if (options.Caching.Enabled)
+            {
+                var cacheService = sp.GetRequiredService<ICacheService>();
+                var keyBuilder = sp.GetRequiredService<ICacheKeyBuilder>();
+                var logger = sp.GetRequiredService<ILogger<CachedChatCompletionService>>();
+                return new CachedChatCompletionService(innerService, cacheService, keyBuilder, options.Caching, logger);
+            }
+
+            return innerService;
         });
 
         return services;
@@ -144,4 +159,31 @@ public static class ServiceCollectionExtensions
  
         return services;
     }
+
+    private static void AddCaching(
+        IServiceCollection services,
+        CachingOptions cachingOptions)
+    {
+        if (!cachingOptions.Enabled)
+            return;
+
+        // Register memory cache
+        services.AddMemoryCache(options =>
+        {
+            options.SizeLimit = cachingOptions.MemoryCacheSizeMb * 1024 * 1024;
+        });
+
+        // Register cache services
+        services.AddSingleton(cachingOptions);
+        services.AddSingleton<ICacheKeyBuilder, CacheKeyBuilder>();
+        services.AddSingleton<ICacheService, HybridCacheService>();
+        services.AddSingleton<ICacheManagementService, CacheManagementService>();
+
+        // Register background cleanup service if enabled
+        if (cachingOptions.EnableAutoCleanup)
+        {
+            services.AddHostedService<CacheCleanupBackgroundService>();
+        }
+    }
 }
+

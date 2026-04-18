@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "4wVOzbwUIns=",
+  "dgSpecHash": "gmyo8yGzhTM=",
   "success": true,
   "projectFilePath": "C:\\Users\\Harshil\\Documents\\LLMPortfolio\\SkillBot\\SkillBot.Console\\SkillBot.Console.csproj",
   "expectedPackageFiles": [
@@ -13,7 +13,8 @@
     "C:\\Users\\Harshil\\.nuget\\packages\\microsoft.extensions.ai\\10.4.0\\microsoft.extensions.ai.10.4.0.nupkg.sha512",
     "C:\\Users\\Harshil\\.nuget\\packages\\microsoft.extensions.ai.abstractions\\10.4.0\\microsoft.extensions.ai.abstractions.10.4.0.nupkg.sha512",
     "C:\\Users\\Harshil\\.nuget\\packages\\microsoft.extensions.ai.openai\\10.4.0\\microsoft.extensions.ai.openai.10.4.0.nupkg.sha512",
-    "C:\\Users\\Harshil\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\10.0.4\\microsoft.extensions.caching.abstractions.10.0.4.nupkg.sha512",
+    "C:\\Users\\Harshil\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\10.0.6\\microsoft.extensions.caching.abstractions.10.0.6.nupkg.sha512",
+    "C:\\Users\\Harshil\\.nuget\\packages\\microsoft.extensions.caching.memory\\10.0.6\\microsoft.extensions.caching.memory.10.0.6.nupkg.sha512",
     "C:\\Users\\Harshil\\.nuget\\packages\\microsoft.extensions.configuration\\10.0.6\\microsoft.extensions.configuration.10.0.6.nupkg.sha512",
     "C:\\Users\\Harshil\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\10.0.6\\microsoft.extensions.configuration.abstractions.10.0.6.nupkg.sha512",
     "C:\\Users\\Harshil\\.nuget\\packages\\microsoft.extensions.configuration.binder\\10.0.6\\microsoft.extensions.configuration.binder.10.0.6.nupkg.sha512",

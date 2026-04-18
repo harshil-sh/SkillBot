@@ -1,0 +1,16 @@
+C:\Users\Harshil\Documents\LLMPortfolio\SkillBot\SkillBot.Infrastructure\bin\Debug\net10.0\SkillBot.Infrastructure.deps.json
+C:\Users\Harshil\Documents\LLMPortfolio\SkillBot\SkillBot.Infrastructure\bin\Debug\net10.0\SkillBot.Infrastructure.dll
+C:\Users\Harshil\Documents\LLMPortfolio\SkillBot\SkillBot.Infrastructure\bin\Debug\net10.0\SkillBot.Infrastructure.pdb
+C:\Users\Harshil\Documents\LLMPortfolio\SkillBot\SkillBot.Infrastructure\bin\Debug\net10.0\SkillBot.Core.dll
+C:\Users\Harshil\Documents\LLMPortfolio\SkillBot\SkillBot.Infrastructure\bin\Debug\net10.0\SkillBot.Core.pdb
+C:\Users\Harshil\Documents\LLMPortfolio\SkillBot\SkillBot.Infrastructure\obj\Debug\net10.0\SkillBot.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\Harshil\Documents\LLMPortfolio\SkillBot\SkillBot.Infrastructure\obj\Debug\net10.0\SkillBot.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Harshil\Documents\LLMPortfolio\SkillBot\SkillBot.Infrastructure\obj\Debug\net10.0\SkillBot.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\Harshil\Documents\LLMPortfolio\SkillBot\SkillBot.Infrastructure\obj\Debug\net10.0\SkillBot.Infrastructure.AssemblyInfo.cs
+C:\Users\Harshil\Documents\LLMPortfolio\SkillBot\SkillBot.Infrastructure\obj\Debug\net10.0\SkillBot.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\Harshil\Documents\LLMPortfolio\SkillBot\SkillBot.Infrastructure\obj\Debug\net10.0\SkillBot.Infrastructure.sourcelink.json
+C:\Users\Harshil\Documents\LLMPortfolio\SkillBot\SkillBot.Infrastructure\obj\Debug\net10.0\SkillBot.93DCB733.Up2Date
+C:\Users\Harshil\Documents\LLMPortfolio\SkillBot\SkillBot.Infrastructure\obj\Debug\net10.0\SkillBot.Infrastructure.dll
+C:\Users\Harshil\Documents\LLMPortfolio\SkillBot\SkillBot.Infrastructure\obj\Debug\net10.0\refint\SkillBot.Infrastructure.dll
+C:\Users\Harshil\Documents\LLMPortfolio\SkillBot\SkillBot.Infrastructure\obj\Debug\net10.0\SkillBot.Infrastructure.pdb
+C:\Users\Harshil\Documents\LLMPortfolio\SkillBot\SkillBot.Infrastructure\obj\Debug\net10.0\ref\SkillBot.Infrastructure.dll

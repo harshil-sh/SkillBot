@@ -767,6 +767,10 @@
               "target": "Package",
               "version": "[10.0.6, )"
             },
+            "Microsoft.Extensions.Caching.Memory": {
+              "target": "Package",
+              "version": "[10.0.6, )"
+            },
             "Microsoft.Extensions.Configuration": {
               "target": "Package",
               "version": "[10.0.6, )"
@@ -776,6 +780,10 @@
               "version": "[10.0.6, )"
             },
             "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[10.0.6, )"
+            },
+            "Microsoft.Extensions.Hosting.Abstractions": {
               "target": "Package",
               "version": "[10.0.6, )"
             },

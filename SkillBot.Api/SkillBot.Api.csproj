@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>d91d5ff3-a9b8-4f77-b5e9-827634a321ed</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Hangfire -->
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.23" />
+    <PackageReference Include="Hangfire.Core" Version="1.8.23" />
+    <PackageReference Include="Hangfire.MemoryStorage" Version="1.8.1.2" />
+    
+    <!-- Fix Newtonsoft.Json vulnerability from Hangfire -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    
+    <!-- Swagger -->
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />
+    <PackageReference Include="Microsoft.OpenApi" Version="2.4.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
+    
+    <!-- Logging -->
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Project References (NOT PackageReference) -->
+    <ProjectReference Include="..\SkillBot.Core\SkillBot.Core.csproj" />
+    <ProjectReference Include="..\SkillBot.Infrastructure\SkillBot.Infrastructure.csproj" />
+    <ProjectReference Include="..\SkillBot.Plugins\SkillBot.Plugins.csproj" />
+  </ItemGroup>
+
+</Project>
