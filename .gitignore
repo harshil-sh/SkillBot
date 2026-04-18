@@ -199,3 +199,12 @@ package-lock.json
 # ====================
 
 ## Add project-specific ignores below this line
+
+## Local editor/agent settings
+.claude/
+
+## Windows reserved-name placeholder file accidentally created
+nul
+
+## Generated app host binary (if ever tracked accidentally)
+**/obj/**/apphost.exe
