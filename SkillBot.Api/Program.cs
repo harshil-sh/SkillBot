@@ -12,6 +12,11 @@ using SkillBot.Infrastructure.Configuration;
 using SkillBot.Plugins.Examples;
 using SkillBot.Plugins.OpenAI;
 using SkillBot.Plugins.Search;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using SkillBot.Api.Models;
+using SkillBot.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,13 +76,30 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowBlazorApp", policy =>
     {
         policy.WithOrigins(
-                builder.Configuration["Cors:AllowedOrigins"]?.Split(',') 
+                builder.Configuration["Cors:AllowedOrigins"]?.Split(',')
                 ?? new[] { "http://localhost:5000", "https://localhost:5001" })
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();
     });
 });
+
+// JWT Settings
+var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>() ?? new JwtSettings();
+
+// Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options => {
+        options.TokenValidationParameters = new TokenValidationParameters {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings.Issuer,
+            ValidAudience = jwtSettings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret))
+        };
+    });
 
 // Add Hangfire for background tasks
 builder.Services.AddHangfire(config => config
@@ -98,6 +120,15 @@ builder.Services.AddSingleton<ITokenUsageService, TokenUsageService>();
 builder.Services.AddSingleton<IBackgroundTaskService, BackgroundTaskService>();
 
 builder.Services.AddMemoryCache(); // For conversation & usage caching
+
+// Auth services
+builder.Services.AddSingleton<IUserRepository, InMemoryUserRepository>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddSingleton<IInputValidator, InputValidator>();
+builder.Services.AddSingleton<IContentSafetyService, ContentSafetyService>();
+builder.Services.AddSingleton<IRateLimiter, RateLimiter>();
 builder.Services.AddHttpContextAccessor(); // For future user context
 
 // Add health checks
@@ -121,6 +152,7 @@ if (app.Environment.IsDevelopment())
 // Middleware pipeline
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseMiddleware<SecurityMiddleware>();
 
 // Hangfire Dashboard
 app.UseHangfireDashboard("/hangfire", new DashboardOptions
@@ -132,9 +164,8 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 app.UseHttpsRedirection();
 app.UseCors("AllowBlazorApp");
 
-// TODO: Add authentication middleware here (Phase 2)
-// app.UseAuthentication();
-// app.UseAuthorization();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 app.MapHealthChecks("/health");

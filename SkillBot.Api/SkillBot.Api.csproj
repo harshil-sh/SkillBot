@@ -16,6 +16,10 @@
     <!-- Fix Newtonsoft.Json vulnerability from Hangfire -->
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     
+    <!-- Authentication & Security -->
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
+
     <!-- Swagger -->
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />
     <PackageReference Include="Microsoft.OpenApi" Version="2.4.1" />

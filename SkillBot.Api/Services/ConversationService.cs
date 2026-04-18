@@ -32,7 +32,11 @@ public class ConversationService : IConversationService
             LastActivityAt = DateTimeOffset.UtcNow
         };
 
-        _cache.Set(conversationId, conversation, _conversationTtl);
+        var cacheOptions = new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(_conversationTtl)
+            .SetSize(1); // Each conversation counts as 1 unit
+
+        _cache.Set(conversationId, conversation, cacheOptions);
         
         _logger.LogInformation("Created conversation {ConversationId}", conversationId);
         
@@ -78,7 +82,11 @@ public class ConversationService : IConversationService
             conversation.LastActivityAt = DateTimeOffset.UtcNow;
 
             // Update cache with extended TTL
-            _cache.Set(conversationId, conversation, _conversationTtl);
+            var cacheOptions = new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(_conversationTtl)
+            .SetSize(1); // Each conversation counts as 1 unit
+
+        _cache.Set(conversationId, conversation, cacheOptions);
             
             _logger.LogDebug(
                 "Saved {Role} message to conversation {ConversationId}",

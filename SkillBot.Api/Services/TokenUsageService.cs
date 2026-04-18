@@ -55,7 +55,11 @@ public class TokenUsageService : ITokenUsageService
         usageData.Entries.Add(usage);
 
         // Update cache with 30-day retention
-        _cache.Set(UsageKey, usageData, TimeSpan.FromDays(30));
+        var cacheOptions = new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(TimeSpan.FromDays(30))
+            .SetSize(1); // Each usage data entry counts as 1 unit
+
+        _cache.Set(UsageKey, usageData, cacheOptions);
 
         _logger.LogDebug(
             "Tracked {Tokens} tokens for conversation {ConversationId} using {Model}",
@@ -146,7 +150,12 @@ public class TokenUsageService : ITokenUsageService
         }
 
         var newData = new UsageData();
-        _cache.Set(UsageKey, newData, TimeSpan.FromDays(30));
+
+        var cacheOptions = new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(TimeSpan.FromDays(30))
+            .SetSize(1); // Each usage data entry counts as 1 unit
+
+        _cache.Set(UsageKey, newData, cacheOptions);
         return newData;
     }
 

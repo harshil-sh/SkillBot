@@ -7,6 +7,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text.Json;
+using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -92,7 +93,11 @@ public class HybridCacheService : ICacheService, IDisposable
             var ttl = await GetRemainingTtlAsync(key, cancellationToken);
             if (ttl > TimeSpan.Zero)
             {
-                _l1Cache.Set(key, l2Value, ttl);
+                var l1Options = new MemoryCacheEntryOptions()
+                    .SetAbsoluteExpiration(ttl)
+                    .SetSize(CalculateEntrySize(l2Value));
+
+                _l1Cache.Set(key, l2Value, l1Options);
             }
 
             return l2Value;
@@ -109,7 +114,11 @@ public class HybridCacheService : ICacheService, IDisposable
     public async Task SetAsync<T>(string key, T value, TimeSpan ttl, string type, CancellationToken cancellationToken = default) where T : class
     {
         // Set in L1
-        _l1Cache.Set(key, value, ttl);
+        var l1Options = new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(ttl)
+            .SetSize(CalculateEntrySize(value));
+
+        _l1Cache.Set(key, value, l1Options);
 
         // Set in L2
         await SetInL2Async(key, value, ttl, type, cancellationToken);
@@ -355,6 +364,13 @@ public class HybridCacheService : ICacheService, IDisposable
         {
             _writeLock.Release();
         }
+    }
+
+    private static long CalculateEntrySize<T>(T value) where T : class
+    {
+        var json = JsonSerializer.Serialize(value);
+        var byteCount = Encoding.UTF8.GetByteCount(json);
+        return Math.Max(1, byteCount);
     }
 
     public void Dispose()
