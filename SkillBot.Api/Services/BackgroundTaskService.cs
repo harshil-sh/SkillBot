@@ -249,10 +249,12 @@ public class AgentTaskExecutor
     private static IServiceProvider GetServiceProvider()
     {
         // This will be injected by Hangfire's IoC container
-        return (IServiceProvider)Hangfire.GlobalConfiguration.Configuration
+        var serviceProviderProperty = Hangfire.GlobalConfiguration.Configuration
             .GetType()
-            .GetProperty("ServiceProvider")?
-            .GetValue(null) ?? throw new InvalidOperationException("Service provider not available");
+            .GetProperty("ServiceProvider");
+
+        var serviceProvider = serviceProviderProperty?.GetValue(Hangfire.GlobalConfiguration.Configuration) as IServiceProvider;
+        return serviceProvider ?? throw new InvalidOperationException("Service provider not available");
     }
 }
 

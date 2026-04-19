@@ -55,8 +55,8 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
     {
-        // Find user by email
-        var user = await _userRepository.GetByEmailAsync(request.Email);
+        // Find user by email or username for console-friendly login.
+        var user = await _userRepository.GetByEmailOrUsernameAsync(request.Email);
         if (user == null)
         {
             throw new InvalidOperationException("Invalid email or password");

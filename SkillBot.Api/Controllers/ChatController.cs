@@ -4,6 +4,7 @@ using SkillBot.Api.Models.Requests;
 using SkillBot.Api.Models.Responses;
 using SkillBot.Api.Services;
 using SkillBot.Core.Interfaces;
+using SkillBot.Infrastructure.Repositories;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -28,6 +29,7 @@ public class ChatController : ControllerBase
     private readonly IInputValidator _inputValidator;
     private readonly IContentSafetyService _contentSafetyService;
     private readonly IRateLimiter _rateLimiter;
+    private readonly IUserRepository _userRepository;
 
     public ChatController(
         IAgentEngine engine,
@@ -38,7 +40,8 @@ public class ChatController : ControllerBase
         IConfiguration configuration,
         IInputValidator inputValidator,
         IContentSafetyService contentSafetyService,
-        IRateLimiter rateLimiter)
+        IRateLimiter rateLimiter,
+        IUserRepository userRepository)
     {
         _engine = engine;
         _conversationService = conversationService;
@@ -49,6 +52,7 @@ public class ChatController : ControllerBase
         _inputValidator = inputValidator;
         _contentSafetyService = contentSafetyService;
         _rateLimiter = rateLimiter;
+        _userRepository = userRepository;
     }
 
     /// <summary>
@@ -73,6 +77,9 @@ public class ChatController : ControllerBase
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "anonymous";
 
+            // Resolve per-user API key, falling back to shared config key
+            var apiKey = await ResolveApiKeyAsync(userId);
+
             // Check rate limit
             var rateLimitResult = await _rateLimiter.CheckRateLimitAsync(userId, "chat");
             if (!rateLimitResult.IsAllowed)
@@ -93,7 +100,7 @@ public class ChatController : ControllerBase
                 return BadRequest(new ErrorResponse
                 {
                     Error = "ValidationFailed",
-                    Message = validationResult.ErrorMessage
+                    Message = validationResult.ErrorMessage ?? "Input validation failed"
                 });
             }
 
@@ -295,6 +302,31 @@ public class ChatController : ControllerBase
                 Message = "Failed to delete conversation"
             });
         }
+    }
+
+    // Returns the user's per-provider API key, or the shared config key if none is set.
+    // TODO: pass apiKey into engine once IAgentEngine.ExecuteAsync supports it.
+    private async Task<string?> ResolveApiKeyAsync(string userId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user is null)
+            return _configuration["OpenAI:ApiKey"];
+
+        var perUserKey = user.PreferredProvider switch
+        {
+            "openai"  => user.OpenAiApiKey,
+            "claude"  => user.ClaudeApiKey,
+            "gemini"  => user.GeminiApiKey,
+            _         => null
+        };
+
+        var hasUserKey = !string.IsNullOrEmpty(perUserKey);
+
+        _logger.LogInformation("Using {Provider} with {KeyType} API key",
+            user.PreferredProvider,
+            hasUserKey ? "user's" : "shared");
+
+        return hasUserKey ? perUserKey : _configuration["OpenAI:ApiKey"];
     }
 
     /// <summary>

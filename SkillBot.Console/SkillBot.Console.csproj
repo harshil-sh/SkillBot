@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="..\SkillBot.Api\SkillBot.Api.csproj" />
     <ProjectReference Include="..\SkillBot.Core\SkillBot.Core.csproj" />
     <ProjectReference Include="..\SkillBot.Infrastructure\SkillBot.Infrastructure.csproj" />
     <ProjectReference Include="..\SkillBot.Plugins\SkillBot.Plugins.csproj" />
@@ -8,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.6" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.6" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.6" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.6" />

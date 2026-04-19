@@ -17,6 +17,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using SkillBot.Api.Models;
 using SkillBot.Infrastructure.Repositories;
+using SkillBot.Infrastructure.LLM;
+using SkillBot.Core.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -125,6 +127,10 @@ builder.Services.AddMemoryCache(); // For conversation & usage caching
 builder.Services.AddSingleton<IUserRepository, InMemoryUserRepository>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddSingleton<ILLMProvider, OpenAiProvider>();
+builder.Services.AddSingleton<LLMProviderFactory>();
+builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 
 builder.Services.AddSingleton<IInputValidator, InputValidator>();
 builder.Services.AddSingleton<IContentSafetyService, ContentSafetyService>();

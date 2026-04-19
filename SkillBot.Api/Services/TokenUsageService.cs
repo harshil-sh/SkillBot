@@ -144,7 +144,8 @@ public class TokenUsageService : ITokenUsageService
 
     private UsageData GetOrCreateUsageData()
     {
-        if (_cache.TryGetValue<UsageData>(UsageKey, out var data))
+        if (_cache.TryGetValue<UsageData>(UsageKey, out var data)
+            && data is not null)
         {
             return data;
         }

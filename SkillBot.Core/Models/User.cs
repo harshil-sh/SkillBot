@@ -8,4 +8,8 @@ public record User
     public required string Username { get; init; }
     public required DateTime CreatedAt { get; init; }
     public required bool IsActive { get; init; }
+    public string? OpenAiApiKey { get; init; }
+    public string? ClaudeApiKey { get; init; }
+    public string? GeminiApiKey { get; init; }
+    public string PreferredProvider { get; init; } = "openai";
 }

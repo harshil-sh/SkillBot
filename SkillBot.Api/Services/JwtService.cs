@@ -27,7 +27,7 @@ public class JwtService : IJwtService
 
         var claims = new[]
         {
-            new Claim("userId", user.Id),
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim("username", user.Username)
         };

@@ -19,8 +19,25 @@ public class InMemoryUserRepository : IUserRepository
         return Task.FromResult(user);
     }
 
+    public Task<User?> GetByEmailOrUsernameAsync(string identifier)
+    {
+        var user = _users.Values.FirstOrDefault(u =>
+            u.Email.Equals(identifier, StringComparison.OrdinalIgnoreCase)
+            || u.Username.Equals(identifier, StringComparison.OrdinalIgnoreCase));
+
+        return Task.FromResult(user);
+    }
+
     public Task<User> CreateAsync(User user)
     {
+        _users[user.Id] = user;
+        return Task.FromResult(user);
+    }
+
+    public Task<User> UpdateAsync(User user)
+    {
+        if (!_users.ContainsKey(user.Id))
+            throw new KeyNotFoundException($"User {user.Id} not found.");
         _users[user.Id] = user;
         return Task.FromResult(user);
     }

@@ -47,7 +47,7 @@ public class PluginsController : ControllerBase
                     {
                         Name = param.Name,
                         Type = param.Type.Name,
-                        Description = param.Description,
+                        Description = param.Description ?? string.Empty,
                         IsRequired = param.IsRequired
                     }).ToList()
                 }).ToList()
@@ -102,7 +102,7 @@ public class PluginsController : ControllerBase
                     {
                         Name = param.Name,
                         Type = param.Type.Name,
-                        Description = param.Description,
+                        Description = param.Description ?? string.Empty,
                         IsRequired = param.IsRequired
                     }).ToList()
                 }).ToList()

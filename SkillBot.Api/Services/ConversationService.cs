@@ -45,7 +45,8 @@ public class ConversationService : IConversationService
 
     public Task<ConversationResponse?> GetConversationAsync(string conversationId)
     {
-        if (_cache.TryGetValue<ConversationData>(conversationId, out var conversation))
+        if (_cache.TryGetValue<ConversationData>(conversationId, out var conversation)
+            && conversation is not null)
         {
             var response = new ConversationResponse
             {
@@ -69,7 +70,8 @@ public class ConversationService : IConversationService
 
     public Task SaveMessageAsync(string conversationId, string role, string content)
     {
-        if (_cache.TryGetValue<ConversationData>(conversationId, out var conversation))
+        if (_cache.TryGetValue<ConversationData>(conversationId, out var conversation)
+            && conversation is not null)
         {
             var message = new MessageData
             {
@@ -83,10 +85,10 @@ public class ConversationService : IConversationService
 
             // Update cache with extended TTL
             var cacheOptions = new MemoryCacheEntryOptions()
-            .SetAbsoluteExpiration(_conversationTtl)
-            .SetSize(1); // Each conversation counts as 1 unit
+                .SetAbsoluteExpiration(_conversationTtl)
+                .SetSize(1); // Each conversation counts as 1 unit
 
-        _cache.Set(conversationId, conversation, cacheOptions);
+            _cache.Set(conversationId, conversation, cacheOptions);
             
             _logger.LogDebug(
                 "Saved {Role} message to conversation {ConversationId}",

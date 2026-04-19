@@ -2,10 +2,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SkillBot.Console.Services;
 using SkillBot.Core.Interfaces;
 using SkillBot.Infrastructure.Configuration;
 using SkillBot.Plugins.Examples;
 using SkillBot.Plugins.OpenAI;
+using System.IO;
 
 namespace SkillBot.Console;
 
@@ -30,6 +32,18 @@ class Program
                 .ConfigureAppConfiguration((context, config) =>
                 {
                     System.Console.WriteLine("⚙️  Loading configuration...");
+
+                    var basePath = Directory.GetCurrentDirectory();
+                    if (!File.Exists(Path.Combine(basePath, "appsettings.json")))
+                    {
+                        var projectPath = Path.Combine(basePath, "SkillBot.Console");
+                        if (File.Exists(Path.Combine(projectPath, "appsettings.json")))
+                        {
+                            basePath = projectPath;
+                        }
+                    }
+
+                    config.SetBasePath(basePath);
                     config.AddJsonFile("appsettings.json", optional: false);
                     config.AddEnvironmentVariables();
                     config.AddUserSecrets<Program>(optional: true);
@@ -38,6 +52,22 @@ class Program
                 {
                     System.Console.WriteLine("🔧 Registering services...");
                     
+                    // Register console services
+                    services.AddHttpClient();
+                    services.AddSingleton<ApiClient>(sp =>
+                    {
+                        var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+                        var configuration = sp.GetRequiredService<IConfiguration>();
+                        return new ApiClient(httpClientFactory.CreateClient(), configuration);
+                    });
+                    services.AddSingleton<ICommandParser, CommandParser>();
+                    services.AddSingleton<IConsoleAuthService, ConsoleAuthService>();
+                    services.AddSingleton<IConsoleChatService, ConsoleChatService>();
+                    services.AddSingleton<IConsoleSearchService, ConsoleSearchService>();
+                    services.AddSingleton<IConsoleSettingsService, ConsoleSettingsService>();
+                    services.AddSingleton<IConsoleAdminService, ConsoleAdminService>();
+                    services.AddSingleton<CommandRouter>();
+
                     // Register SkillBot services
                     services.AddSkillBot(context.Configuration);
 
@@ -82,7 +112,6 @@ class Program
 
     static async Task RunSingleAgentAsync(IServiceProvider services)
     {
-        var engine = services.GetRequiredService<IAgentEngine>();
         var pluginProvider = services.GetRequiredService<IPluginProvider>();
         var logger = services.GetRequiredService<ILogger<Program>>();
 
@@ -109,12 +138,12 @@ class Program
             System.Console.WriteLine($"  • {plugin.Name}: {plugin.Description}");
         }
         System.Console.WriteLine();
-        System.Console.WriteLine("Type your message (or 'quit' to exit, 'reset' to clear history):");
-        System.Console.WriteLine("To use multi-agent mode, restart with: dotnet run -- --multi-agent");
+        System.Console.WriteLine("Type a command or 'help' for available commands. Type 'exit' to quit.");
+        System.Console.WriteLine("Tip: once logged in, plain text is treated as a chat message (no 'chat' prefix needed).");
         System.Console.WriteLine(new string('─', 50));
         System.Console.WriteLine();
 
-        await RunAgentLoopAsync(engine);
+        await RunAgentLoopAsync(services);
     }
 
     static async Task RunMultiAgentAsync(IServiceProvider services)
@@ -178,66 +207,60 @@ class Program
         }
     }
 
-    static async Task RunAgentLoopAsync(IAgentEngine engine)
+    static async Task RunAgentLoopAsync(IServiceProvider serviceProvider)
     {
+        var parser = serviceProvider.GetRequiredService<ICommandParser>();
+        var authService = serviceProvider.GetRequiredService<IConsoleAuthService>();
+        var router = new CommandRouter();
+        var knownCommands = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "register", "login", "logout", "chat", "multi-agent", "search", "search-news",
+            "settings", "stats", "cache-stats", "users", "health", "help", "exit"
+        };
+
         while (true)
         {
-            System.Console.ForegroundColor = ConsoleColor.Cyan;
-            System.Console.Write("You: ");
-            System.Console.ResetColor();
-
+            System.Console.Write("> ");
             var input = System.Console.ReadLine();
 
-            if (string.IsNullOrWhiteSpace(input))
-                continue;
+            if (string.IsNullOrWhiteSpace(input)) continue;
 
-            if (input.Equals("quit", StringComparison.OrdinalIgnoreCase))
+            CommandResult commandResult;
+            var firstToken = input.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+            var shouldTreatAsChat = !string.IsNullOrWhiteSpace(firstToken)
+                                    && !knownCommands.Contains(firstToken)
+                                    && !string.IsNullOrWhiteSpace(authService.GetCurrentToken());
+
+            if (shouldTreatAsChat)
             {
-                System.Console.WriteLine("\nGoodbye! 👋");
-                break;
+                commandResult = new CommandResult
+                {
+                    Command = "chat",
+                    IsValid = true,
+                    Arguments = new Dictionary<string, string> { ["0"] = input }
+                };
+            }
+            else
+            {
+                commandResult = await parser.ParseAsync(input);
             }
 
-            if (input.Equals("reset", StringComparison.OrdinalIgnoreCase))
+            if (!commandResult.IsValid)
             {
-                await engine.ResetAsync();
-                System.Console.WriteLine("✓ Conversation history cleared.\n");
+                System.Console.WriteLine($"Error: {commandResult.ErrorMessage}");
                 continue;
             }
+
+            if (commandResult.Command == "exit") break;
 
             try
             {
-                System.Console.ForegroundColor = ConsoleColor.Green;
-                System.Console.Write("Assistant: ");
-                System.Console.ResetColor();
-
-                var response = await engine.ExecuteAsync(input);
-
-                if (response.IsSuccess)
-                {
-                    System.Console.WriteLine(response.Content);
-
-                    if (response.ToolCalls.Count > 0)
-                    {
-                        System.Console.ForegroundColor = ConsoleColor.DarkGray;
-                        System.Console.WriteLine($"\n[Used {response.ToolCalls.Count} tool(s) in {response.ExecutionTime.TotalMilliseconds:F0}ms]");
-                        System.Console.ResetColor();
-                    }
-                }
-                else
-                {
-                    System.Console.ForegroundColor = ConsoleColor.Red;
-                    System.Console.WriteLine($"Error: {response.ErrorMessage}");
-                    System.Console.ResetColor();
-                }
+                await router.ExecuteAsync(commandResult, serviceProvider);
             }
             catch (Exception ex)
             {
-                System.Console.ForegroundColor = ConsoleColor.Red;
                 System.Console.WriteLine($"Error: {ex.Message}");
-                System.Console.ResetColor();
             }
-
-            System.Console.WriteLine();
         }
     }
 
