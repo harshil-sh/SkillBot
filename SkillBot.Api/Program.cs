@@ -19,6 +19,9 @@ using SkillBot.Api.Models;
 using SkillBot.Infrastructure.Repositories;
 using SkillBot.Infrastructure.LLM;
 using SkillBot.Core.Services;
+using Microsoft.EntityFrameworkCore;
+using SkillBot.Infrastructure.Data;
+using SkillBot.Infrastructure.Channels;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -123,9 +126,26 @@ builder.Services.AddSingleton<IBackgroundTaskService, BackgroundTaskService>();
 
 builder.Services.AddMemoryCache(); // For conversation & usage caching
 
+// Database
+builder.Services.AddDbContext<SkillBotDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("SkillBot")));
+
 // Auth services
-builder.Services.AddSingleton<IUserRepository, InMemoryUserRepository>();
+builder.Services.AddScoped<IUserRepository, SqliteUserRepository>();
+builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+
+// Channel services
+builder.Services.AddSingleton<IChannelManager, ChannelManager>();
+builder.Services.AddSingleton<MessageQueue>();
+builder.Services.AddScoped<IChannelUserRepository, ChannelUserRepository>();
+builder.Services.AddScoped<IWebhookHandlerService, WebhookHandlerService>();
+
+// Register Telegram channel
+if (builder.Configuration.GetValue<bool>("Channels:Telegram:Enabled"))
+{
+    builder.Services.AddSingleton<TelegramChannel>();
+}
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddSingleton<ILLMProvider, OpenAiProvider>();
@@ -142,6 +162,26 @@ builder.Services.AddHealthChecks()
     .AddCheck<SkillBotHealthCheck>("skillbot_health");
 
 var app = builder.Build();
+
+// Initialize database
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<SkillBotDbContext>();
+    await SkillBot.Infrastructure.Data.DbInitializer.InitializeAsync(context);
+}
+
+// Register enabled channels with IChannelManager
+using (var scope = app.Services.CreateScope())
+{
+    var channelManager = scope.ServiceProvider.GetRequiredService<IChannelManager>();
+
+    if (app.Configuration.GetValue<bool>("Channels:Telegram:Enabled"))
+    {
+        var telegramChannel = app.Services.GetRequiredService<TelegramChannel>();
+        channelManager.RegisterChannel(telegramChannel);
+        app.Logger.LogInformation("Telegram channel registered");
+    }
+}
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())

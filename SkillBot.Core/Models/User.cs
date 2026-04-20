@@ -11,5 +11,7 @@ public record User
     public string? OpenAiApiKey { get; init; }
     public string? ClaudeApiKey { get; init; }
     public string? GeminiApiKey { get; init; }
+    public string? TelegramBotToken { get; init; }
+    public string? SerpApiKey { get; init; }
     public string PreferredProvider { get; init; } = "openai";
 }

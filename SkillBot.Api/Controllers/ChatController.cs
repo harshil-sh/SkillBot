@@ -4,6 +4,7 @@ using SkillBot.Api.Models.Requests;
 using SkillBot.Api.Models.Responses;
 using SkillBot.Api.Services;
 using SkillBot.Core.Interfaces;
+using SkillBot.Core.Models;
 using SkillBot.Infrastructure.Repositories;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -30,6 +31,7 @@ public class ChatController : ControllerBase
     private readonly IContentSafetyService _contentSafetyService;
     private readonly IRateLimiter _rateLimiter;
     private readonly IUserRepository _userRepository;
+    private readonly IConversationRepository _conversationRepository;
 
     public ChatController(
         IAgentEngine engine,
@@ -41,7 +43,8 @@ public class ChatController : ControllerBase
         IInputValidator inputValidator,
         IContentSafetyService contentSafetyService,
         IRateLimiter rateLimiter,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IConversationRepository conversationRepository)
     {
         _engine = engine;
         _conversationService = conversationService;
@@ -53,6 +56,7 @@ public class ChatController : ControllerBase
         _contentSafetyService = contentSafetyService;
         _rateLimiter = rateLimiter;
         _userRepository = userRepository;
+        _conversationRepository = conversationRepository;
     }
 
     /// <summary>
@@ -199,6 +203,19 @@ public class ChatController : ControllerBase
                 tokensUsed,
                 model);
 
+            var conversation = new Conversation
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = userId,
+                Message = request.Message,
+                Response = agentContent,
+                CreatedAt = DateTime.UtcNow,
+                TokensUsed = tokensUsed,
+                ConversationId = conversationId
+            };
+
+            await _conversationRepository.CreateAsync(conversation);
+
             var response = new ChatResponse
             {
                 Message = agentContent,
@@ -233,6 +250,31 @@ public class ChatController : ControllerBase
                 Error = "InternalError",
                 Message = "An error occurred while processing your request",
                 Details = ex.Message
+            });
+        }
+    }
+
+    /// <summary>
+    /// Get chat history for the authenticated user
+    /// </summary>
+    [HttpGet("history")]
+    public async Task<ActionResult> GetHistory([FromQuery] int limit = 50)
+    {
+        try
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "anonymous";
+            var conversations = await _conversationRepository.GetByUserIdAsync(userId, limit);
+            return Ok(conversations);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving history for user {UserId}",
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "anonymous");
+
+            return StatusCode(500, new ErrorResponse
+            {
+                Error = "InternalError",
+                Message = "Failed to retrieve chat history"
             });
         }
     }

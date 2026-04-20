@@ -36,7 +36,13 @@ public class AuthService : IAuthService
             Username = request.Username,
             PasswordHash = passwordHash,
             CreatedAt = DateTime.UtcNow,
-            IsActive = true
+            IsActive = true,
+            TelegramBotToken = string.IsNullOrWhiteSpace(request.TelegramBotToken)
+                ? null
+                : request.TelegramBotToken.Trim(),
+            SerpApiKey = string.IsNullOrWhiteSpace(request.SerpApiKey)
+                ? null
+                : request.SerpApiKey.Trim()
         };
 
         await _userRepository.CreateAsync(user);

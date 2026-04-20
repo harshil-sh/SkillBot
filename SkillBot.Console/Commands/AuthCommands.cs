@@ -81,45 +81,64 @@ public static class AuthCommands
 
     private static async Task RunApiKeySetupWizardAsync(IConsoleSettingsService settingsService)
     {
-        ConsoleHelper.WriteInfo("\nLet's configure your API keys.");
-        ConsoleHelper.WriteInfo("Press Enter to skip any key and set it later with 'settings set <key> <value>'.");
+        ConsoleHelper.WriteInfo("\nLet's configure your API keys (all saved securely to your account).");
+        ConsoleHelper.WriteInfo("Press Enter to skip any key and set it later with 'settings api-key <provider> <key>'.\n");
 
-        await PromptAndPersistKeyAsync(settingsService, "openai-api-key", "Enter OpenAI API key");
-        await PromptAndPersistKeyAsync(settingsService, "serpapi-api-key", "Enter SerpAPI key");
+        await PromptAndSaveApiKeyAsync(settingsService, "openai",   "Enter OpenAI API key");
+        await PromptAndSaveApiKeyAsync(settingsService, "claude",   "Enter Anthropic Claude API key");
+        await PromptAndSaveApiKeyAsync(settingsService, "gemini",   "Enter Google Gemini API key");
+        await PromptAndSaveApiKeyAsync(settingsService, "serpapi",  "Enter SerpAPI key (for web search)");
+        await PromptAndSaveApiKeyAsync(settingsService, "telegram", "Enter Telegram Bot Token");
 
         ConsoleHelper.WriteSuccess("✅ API key setup completed.");
     }
 
-    private static async Task PromptAndPersistKeyAsync(
+    private static async Task PromptAndSaveApiKeyAsync(
         IConsoleSettingsService settingsService,
-        string keyName,
+        string provider,
         string prompt)
     {
-        string? existing = null;
-        try { existing = await settingsService.GetSettingAsync(keyName); } catch (KeyNotFoundException) { }
+        bool alreadySet = false;
+        try
+        {
+            var current = await settingsService.GetUserSettingsAsync();
+            alreadySet = provider switch
+            {
+                "openai"   => current.HasOpenAiKey,
+                "claude"   => current.HasClaudeKey,
+                "gemini"   => current.HasGeminiKey,
+                "serpapi"  => current.HasSerpApiKey,
+                "telegram" => current.HasTelegramToken,
+                _          => false
+            };
+        }
+        catch { /* settings not yet available — treat as not set */ }
 
-        if (!string.IsNullOrWhiteSpace(existing))
-        {
+        if (alreadySet)
             System.Console.Write($"{prompt} (already configured, press Enter to keep): ");
-        }
         else
-        {
             System.Console.Write($"{prompt}: ");
-        }
 
         var value = System.Console.ReadLine();
 
         if (string.IsNullOrWhiteSpace(value))
         {
-            if (!string.IsNullOrWhiteSpace(existing))
-                ConsoleHelper.WriteInfo($"Kept existing '{keyName}'.");
+            if (alreadySet)
+                ConsoleHelper.WriteInfo($"  Kept existing {provider} key.");
             else
-                ConsoleHelper.WriteWarning($"Skipped '{keyName}'.");
+                ConsoleHelper.WriteWarning($"  Skipped {provider}.");
             return;
         }
 
-        await settingsService.SetSettingAsync(keyName, value.Trim());
-        ConsoleHelper.WriteSuccess($"Saved '{keyName}'.");
+        try
+        {
+            await settingsService.SetApiKeyAsync(provider, value.Trim());
+            ConsoleHelper.WriteSuccess($"  Saved {provider} key.");
+        }
+        catch (Exception ex)
+        {
+            ConsoleHelper.WriteError($"  Failed to save {provider} key: {ex.Message}");
+        }
     }
 
     private static string ReadPasswordFromConsole()

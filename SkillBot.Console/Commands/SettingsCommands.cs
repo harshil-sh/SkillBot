@@ -126,12 +126,14 @@ public static class SettingsCommands
         {
             var settings = await settingsService.GetUserSettingsAsync();
 
-            System.Console.WriteLine(new string('─', 40));
+            System.Console.WriteLine(new string('─', 45));
             System.Console.WriteLine($"  Preferred provider : {settings.PreferredProvider}");
-            System.Console.WriteLine($"  OpenAI key         : {(settings.HasOpenAiKey ? "configured" : "not set")}");
-            System.Console.WriteLine($"  Claude key         : {(settings.HasClaudeKey ? "configured" : "not set")}");
-            System.Console.WriteLine($"  Gemini key         : {(settings.HasGeminiKey ? "configured" : "not set")}");
-            System.Console.WriteLine(new string('─', 40));
+            System.Console.WriteLine($"  OpenAI key         : {(settings.HasOpenAiKey    ? "configured" : "not set")}");
+            System.Console.WriteLine($"  Claude key         : {(settings.HasClaudeKey    ? "configured" : "not set")}");
+            System.Console.WriteLine($"  Gemini key         : {(settings.HasGeminiKey    ? "configured" : "not set")}");
+            System.Console.WriteLine($"  SerpAPI key        : {(settings.HasSerpApiKey   ? "configured" : "not set")}");
+            System.Console.WriteLine($"  Telegram token     : {(settings.HasTelegramToken? "configured" : "not set")}");
+            System.Console.WriteLine(new string('─', 45));
         }
         catch (Exception ex)
         {

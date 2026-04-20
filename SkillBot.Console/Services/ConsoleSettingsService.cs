@@ -68,9 +68,11 @@ public class ConsoleSettingsService : IConsoleSettingsService
         return new UserSettingsResult
         {
             PreferredProvider = response.PreferredProvider,
-            HasOpenAiKey = response.HasOpenAiKey,
-            HasClaudeKey = response.HasClaudeKey,
-            HasGeminiKey = response.HasGeminiKey
+            HasOpenAiKey      = response.HasOpenAiKey,
+            HasClaudeKey      = response.HasClaudeKey,
+            HasGeminiKey      = response.HasGeminiKey,
+            HasTelegramToken  = response.HasTelegramToken,
+            HasSerpApiKey     = response.HasSerpApiKey
         };
     }
 
@@ -116,5 +118,7 @@ public class ConsoleSettingsService : IConsoleSettingsService
         [JsonPropertyName("hasOpenAiKey")]      public required bool HasOpenAiKey { get; init; }
         [JsonPropertyName("hasClaudeKey")]      public required bool HasClaudeKey { get; init; }
         [JsonPropertyName("hasGeminiKey")]      public required bool HasGeminiKey { get; init; }
+        [JsonPropertyName("hasTelegramToken")]  public required bool HasTelegramToken { get; init; }
+        [JsonPropertyName("hasSerpApiKey")]     public required bool HasSerpApiKey { get; init; }
     }
 }

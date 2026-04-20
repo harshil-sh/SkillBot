@@ -16,4 +16,6 @@ public sealed record UserSettingsResult
     public required bool HasOpenAiKey { get; init; }
     public required bool HasClaudeKey { get; init; }
     public required bool HasGeminiKey { get; init; }
+    public required bool HasTelegramToken { get; init; }
+    public required bool HasSerpApiKey { get; init; }
 }

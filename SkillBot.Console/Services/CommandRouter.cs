@@ -22,6 +22,7 @@ public class CommandRouter
     {
         switch (command.Command)
         {
+            // ── Auth ──────────────────────────────────────────────────────────
             case "register":
                 await AuthCommands.HandleRegisterAsync(
                     command.Arguments,
@@ -40,6 +41,7 @@ public class CommandRouter
                     services.GetRequiredService<IConsoleAuthService>());
                 break;
 
+            // ── Chat ──────────────────────────────────────────────────────────
             case "chat":
                 await ChatCommands.HandleChatAsync(
                     command.Arguments,
@@ -52,6 +54,25 @@ public class CommandRouter
                     services.GetRequiredService<IConsoleChatService>());
                 break;
 
+            case "history":
+                await ChatHistoryCommands.HandleHistoryAsync(
+                    command.Arguments,
+                    services.GetRequiredService<IConsoleChatService>());
+                break;
+
+            case "conversation":
+                await ChatHistoryCommands.HandleGetConversationAsync(
+                    command.Arguments,
+                    services.GetRequiredService<IConsoleChatService>());
+                break;
+
+            case "delete-conversation":
+                await ChatHistoryCommands.HandleDeleteConversationAsync(
+                    command.Arguments,
+                    services.GetRequiredService<IConsoleChatService>());
+                break;
+
+            // ── Search ────────────────────────────────────────────────────────
             case "search":
                 await SearchCommands.HandleSearchAsync(
                     command.Arguments,
@@ -64,22 +85,79 @@ public class CommandRouter
                     services.GetRequiredService<IConsoleSearchService>());
                 break;
 
+            // ── Settings ──────────────────────────────────────────────────────
             case "settings":
                 await HandleSettingsSubcommandAsync(
                     command.Arguments,
                     services.GetRequiredService<IConsoleSettingsService>());
                 break;
 
+            // ── Plugins ───────────────────────────────────────────────────────
+            case "plugins":
+                await PluginCommands.HandlePluginsAsync(
+                    command.Arguments,
+                    services.GetRequiredService<IConsolePluginService>());
+                break;
+
+            // ── Tasks ─────────────────────────────────────────────────────────
+            case "tasks":
+                await TasksCommands.HandleTasksAsync(
+                    command.Arguments,
+                    services.GetRequiredService<IConsoleTaskService>());
+                break;
+
+            // ── Usage / Stats ─────────────────────────────────────────────────
             case "stats":
                 await AdminCommands.HandleStatsAsync(
                     services.GetRequiredService<IConsoleAdminService>());
                 break;
 
+            case "stats-conversation":
+                await AdminCommands.HandleConversationStatsAsync(
+                    command.Arguments,
+                    services.GetRequiredService<IConsoleAdminService>());
+                break;
+
+            case "top-conversations":
+                await AdminCommands.HandleTopConversationsAsync(
+                    command.Arguments,
+                    services.GetRequiredService<IConsoleAdminService>());
+                break;
+
+            case "reset-stats":
+                await AdminCommands.HandleResetStatsAsync(
+                    services.GetRequiredService<IConsoleAdminService>());
+                break;
+
+            // ── Cache ─────────────────────────────────────────────────────────
             case "cache-stats":
                 await AdminCommands.HandleCacheStatsAsync(
                     services.GetRequiredService<IConsoleAdminService>());
                 break;
 
+            case "cache-health":
+                await AdminCommands.HandleCacheHealthAsync(
+                    services.GetRequiredService<IConsoleAdminService>());
+                break;
+
+            case "cache-clear":
+                await AdminCommands.HandleCacheClearAsync(
+                    services.GetRequiredService<IConsoleAdminService>());
+                break;
+
+            case "cache-invalidate":
+                await AdminCommands.HandleCacheInvalidateAsync(
+                    command.Arguments,
+                    services.GetRequiredService<IConsoleAdminService>());
+                break;
+
+            // ── Multi-agent info ──────────────────────────────────────────────
+            case "agents":
+                await AdminCommands.HandleAgentsAsync(
+                    services.GetRequiredService<IConsoleAdminService>());
+                break;
+
+            // ── Admin misc ────────────────────────────────────────────────────
             case "users":
                 await AdminCommands.HandleUsersAsync(
                     services.GetRequiredService<IConsoleAdminService>());
@@ -168,8 +246,7 @@ public class CommandRouter
         System.Console.WriteLine("  settings set <key> <value>");
         System.Console.WriteLine("  settings list");
         System.Console.WriteLine("  settings show");
-        System.Console.WriteLine("  settings set-api-key --provider <openai|claude|gemini> --key <api-key>");
+        System.Console.WriteLine("  settings set-api-key --provider <openai|claude|gemini|serpapi|telegram> --key <api-key>");
         System.Console.WriteLine("  settings set-provider <openai|claude|gemini>");
     }
-
 }

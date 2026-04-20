@@ -66,6 +66,8 @@ class Program
                     services.AddSingleton<IConsoleSearchService, ConsoleSearchService>();
                     services.AddSingleton<IConsoleSettingsService, ConsoleSettingsService>();
                     services.AddSingleton<IConsoleAdminService, ConsoleAdminService>();
+                    services.AddSingleton<IConsolePluginService, ConsolePluginService>();
+                    services.AddSingleton<IConsoleTaskService, ConsoleTaskService>();
                     services.AddSingleton<CommandRouter>();
 
                     // Register SkillBot services
@@ -214,8 +216,17 @@ class Program
         var router = new CommandRouter();
         var knownCommands = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            "register", "login", "logout", "chat", "multi-agent", "search", "search-news",
-            "settings", "stats", "cache-stats", "users", "health", "help", "exit"
+            "register", "login", "logout",
+            "chat", "multi-agent", "history", "conversation", "delete-conversation",
+            "search", "search-news",
+            "settings",
+            "plugins",
+            "agents",
+            "tasks",
+            "stats", "stats-conversation", "top-conversations", "reset-stats",
+            "cache-stats", "cache-health", "cache-clear", "cache-invalidate",
+            "users", "health",
+            "help", "exit"
         };
 
         while (true)

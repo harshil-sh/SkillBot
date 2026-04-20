@@ -70,6 +70,13 @@ public class ApiClient
         return await response.Content.ReadFromJsonAsync<T>();
     }
 
+    public async Task DeleteAsync(string endpoint)
+    {
+        var request = BuildRequest(HttpMethod.Delete, endpoint);
+        var response = await _httpClient.SendAsync(request);
+        await EnsureSuccessOrThrowAsync(response);
+    }
+
     private static async Task EnsureSuccessOrThrowAsync(HttpResponseMessage response)
     {
         if (response.IsSuccessStatusCode)

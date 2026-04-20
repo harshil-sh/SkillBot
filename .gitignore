@@ -105,6 +105,7 @@ API-REFERENCE.md
 CODEBASE-CONTEXT.md
 DEVELOPMENT-GUIDE.md
 AI-CONTEXT.md
+.github/copilot-instructions.md
 
 ## Keep public docs (for users and contributors)
 !docs/README.md
@@ -199,6 +200,16 @@ package-lock.json
 # ====================
 
 ## Add project-specific ignores below this line
+
+## Local full E2E test script (contains hardcoded test credentials, developer-only)
+test-e2e.ps1
+
+## Test-run artefacts (logs, ephemeral test-user state files)
+test-artifacts/
+.persist-test-user.json
+.rerun-test-user.json
+.test-user-restart.json
+.test-user.json
 
 ## Local editor/agent settings
 .claude/
