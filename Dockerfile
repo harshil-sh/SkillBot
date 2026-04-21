@@ -16,12 +16,11 @@ RUN dotnet publish SkillBot.Api/SkillBot.Api.csproj -c Release -o /app/publish -
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
-# Create non-root user
-RUN adduser --disabled-password --gecos "" appuser && chown -R appuser /app
+# Create non-root user and data directory
+RUN useradd --no-create-home --shell /bin/false appuser \
+    && mkdir -p /app/data \
+    && chown -R appuser /app
 USER appuser
-
-# SQLite data directory
-RUN mkdir -p /app/data
 
 COPY --from=build /app/publish .
 
