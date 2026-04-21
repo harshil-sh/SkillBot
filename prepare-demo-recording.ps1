@@ -15,7 +15,7 @@
 param(
     [switch]$SkipDocker,
     [switch]$NoOpen,
-    [string]$BaseUrl  = "http://localhost:5188",
+    [string]$BaseUrl   = "http://localhost:5188",
     [string]$HealthUrl = "http://localhost:5188/health"
 )
 
@@ -25,25 +25,22 @@ param(
 
 function Write-Header {
     param([string]$Text)
-    $width = 70
-    $line  = "─" * $width
+    $line = "-" * 68
     Write-Host ""
     Write-Host "  $line" -ForegroundColor Cyan
-    $pad = [Math]::Max(0, [Math]::Floor(($width - $Text.Length) / 2))
-    Write-Host ("  " + " " * $pad + $Text) -ForegroundColor Cyan
+    $pad = [Math]::Max(0, [Math]::Floor((68 - $Text.Length) / 2))
+    Write-Host ("  " + (" " * $pad) + $Text) -ForegroundColor Cyan
     Write-Host "  $line" -ForegroundColor Cyan
     Write-Host ""
 }
 
 function Write-Step {
     param([int]$Number, [string]$Text, [string]$Duration = "", [ConsoleColor]$Color = "White")
-    $dur = if ($Duration) { "  [$Duration]" } else { "" }
     Write-Host "  " -NoNewline
     Write-Host "  Step $Number  " -ForegroundColor Black -BackgroundColor $Color -NoNewline
     Write-Host "  $Text" -ForegroundColor $Color -NoNewline
     if ($Duration) {
-        Write-Host "  " -NoNewline
-        Write-Host $dur -ForegroundColor DarkGray
+        Write-Host "  [$Duration]" -ForegroundColor DarkGray
     } else {
         Write-Host ""
     }
@@ -51,25 +48,25 @@ function Write-Step {
 
 function Write-Tip {
     param([string]$Text)
-    Write-Host "  💡 " -NoNewline -ForegroundColor Yellow
+    Write-Host "  TIP  " -NoNewline -ForegroundColor Yellow
     Write-Host $Text -ForegroundColor DarkYellow
 }
 
 function Write-Reminder {
     param([string]$Text)
-    Write-Host "  ⚠  " -NoNewline -ForegroundColor Magenta
+    Write-Host "  NOTE " -NoNewline -ForegroundColor Magenta
     Write-Host $Text -ForegroundColor Magenta
 }
 
 function Write-Ok {
     param([string]$Text)
-    Write-Host "  ✓  " -NoNewline -ForegroundColor Green
+    Write-Host "  OK   " -NoNewline -ForegroundColor Green
     Write-Host $Text -ForegroundColor Green
 }
 
 function Write-Info {
     param([string]$Text)
-    Write-Host "  →  " -NoNewline -ForegroundColor DarkCyan
+    Write-Host "  -->  " -NoNewline -ForegroundColor DarkCyan
     Write-Host $Text -ForegroundColor DarkCyan
 }
 
@@ -91,7 +88,7 @@ function Wait-ForHealth {
         } catch {
             # not ready yet
         }
-        Write-Host "  ." -NoNewline -ForegroundColor DarkGray
+        Write-Host "." -NoNewline -ForegroundColor DarkGray
         Start-Sleep -Seconds $IntervalSec
     }
 
@@ -106,55 +103,48 @@ function Wait-ForHealth {
 
 Clear-Host
 Write-Host ""
-Write-Host "  ██████  ██ ██     ██      ██████   ██████  ████████" -ForegroundColor Cyan
-Write-Host "  ██      ██ ██     ██      ██   ██ ██    ██    ██   " -ForegroundColor Cyan
-Write-Host "  ███████ ██ ██     ██      ██████  ██    ██    ██   " -ForegroundColor Cyan
-Write-Host "       ██ ██ ██     ██      ██   ██ ██    ██    ██   " -ForegroundColor Cyan
-Write-Host "  ██████  ██ ██████ ███████ ██████   ██████     ██   " -ForegroundColor Cyan
-Write-Host ""
-Write-Host "  Demo GIF Recording Preparation Script" -ForegroundColor White
-Write-Host "  ──────────────────────────────────────────────────" -ForegroundColor DarkGray
+Write-Host "  ================================================" -ForegroundColor Cyan
+Write-Host "    SkillBot -- Demo GIF Recording Preparation    " -ForegroundColor Cyan
+Write-Host "  ================================================" -ForegroundColor Cyan
 Write-Host ""
 
 # ---------------------------------------------------------------------------
 # Pre-flight: recording tools
 # ---------------------------------------------------------------------------
 
-Write-Header "Pre-flight Checklist"
+Write-Header "PRE-FLIGHT CHECKLIST"
 
 Write-Tip "Install a screen recorder before continuing:"
-Write-Host "     • ScreenToGif  →  https://www.screentogif.com  (Windows — recommended)" -ForegroundColor Gray
-Write-Host "     • LICEcap      →  https://www.cockos.com/licecap  (Windows / macOS)" -ForegroundColor Gray
-Write-Host "     • Peek         →  https://github.com/phw/peek  (Linux)" -ForegroundColor Gray
-Write-Host "     • Gifox        →  https://gifox.io  (macOS)" -ForegroundColor Gray
+Write-Host "     ScreenToGif  ->  https://www.screentogif.com  (Windows - recommended)" -ForegroundColor Gray
+Write-Host "     LICEcap      ->  https://www.cockos.com/licecap  (Windows / macOS)" -ForegroundColor Gray
+Write-Host "     Peek         ->  https://github.com/phw/peek  (Linux)" -ForegroundColor Gray
+Write-Host "     Gifox        ->  https://gifox.io  (macOS)" -ForegroundColor Gray
 Write-Host ""
 
-Write-Reminder "Recorder settings:"
-Write-Host "     Resolution : 1280 × 720" -ForegroundColor DarkGray
+Write-Reminder "Recorder settings to configure:"
+Write-Host "     Resolution : 1280 x 720" -ForegroundColor DarkGray
 Write-Host "     Frame rate : 15 FPS" -ForegroundColor DarkGray
-Write-Host "     Target size: < 5 MB" -ForegroundColor DarkGray
-Write-Host "     Output path: docs/assets/demo.gif" -ForegroundColor DarkGray
+Write-Host "     Max size   : 5 MB" -ForegroundColor DarkGray
+Write-Host "     Output     : docs/assets/demo.gif" -ForegroundColor DarkGray
 Write-Host ""
 
-$ready = Read-Host "  Press ENTER when your recorder is open and configured (or Ctrl+C to abort)"
+$null = Read-Host "  Press ENTER when your recorder is open and configured (or Ctrl+C to abort)"
 
 # ---------------------------------------------------------------------------
-# Step 1 — Start Docker services
+# Step 1 -- Start Docker services
 # ---------------------------------------------------------------------------
 
-Write-Header "Step 1 — Starting SkillBot Services"
+Write-Header "STEP 1 -- STARTING SKILLBOT SERVICES"
 
 if ($SkipDocker) {
-    Write-Ok "Skipping docker-compose (--SkipDocker flag set)."
+    Write-Ok "Skipping docker-compose (SkipDocker flag set)."
 } else {
-    # Verify docker is available
     if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
         Write-Warning "docker not found in PATH. Is Docker Desktop running?"
         Write-Info "Start Docker Desktop, then re-run this script."
         exit 1
     }
 
-    # Check docker-compose.yml exists
     if (-not (Test-Path "docker-compose.yml")) {
         Write-Warning "docker-compose.yml not found in the current directory."
         Write-Info "Run this script from the SkillBot repository root."
@@ -172,10 +162,10 @@ if ($SkipDocker) {
 }
 
 # ---------------------------------------------------------------------------
-# Step 2 — Wait for health
+# Step 2 -- Wait for health
 # ---------------------------------------------------------------------------
 
-Write-Header "Step 2 — Waiting for Services"
+Write-Header "STEP 2 -- WAITING FOR SERVICES"
 
 $healthy = Wait-ForHealth -Url $HealthUrl -TimeoutSec 120
 Write-Host ""
@@ -186,13 +176,13 @@ if (-not $healthy) {
 }
 
 # ---------------------------------------------------------------------------
-# Step 3 — Open browser
+# Step 3 -- Open browser
 # ---------------------------------------------------------------------------
 
-Write-Header "Step 3 — Opening Browser"
+Write-Header "STEP 3 -- OPENING BROWSER"
 
 if ($NoOpen) {
-    Write-Info "Skipping browser open (--NoOpen flag set)."
+    Write-Info "Skipping browser open (NoOpen flag set)."
     Write-Info "Navigate manually to: $BaseUrl"
 } else {
     Write-Info "Opening $BaseUrl in your default browser..."
@@ -202,72 +192,70 @@ if ($NoOpen) {
 }
 
 # ---------------------------------------------------------------------------
-# Step 4 — Recording guide
+# Step 4 -- Recording guide
 # ---------------------------------------------------------------------------
 
-Write-Header "Step 4 — Recording Guide"
+Write-Header "STEP 4 -- RECORDING GUIDE"
 
-Write-Host "  Resize your browser window to 1280 × 720, then start your recorder." -ForegroundColor White
-Write-Host "  Follow the script below. Suggested timing is shown in brackets." -ForegroundColor DarkGray
+Write-Host "  Resize your browser window to 1280 x 720, then start your recorder." -ForegroundColor White
+Write-Host "  Follow the script below. Suggested timing shown in [brackets]." -ForegroundColor DarkGray
 Write-Host ""
 
-Write-Step 1 "Show terminal with  docker compose up -d  output" "~2 s" Cyan
+Write-Step 1 "Show terminal with 'docker compose up -d' output" "~2 s" Cyan
 Write-Host ""
-Write-Step 2 "Switch to browser — homepage / landing loads" "~1 s" Cyan
+Write-Step 2 "Switch to browser -- homepage / landing loads" "~1 s" Cyan
 Write-Host ""
-Write-Step 3 "Show Login / Register screen — pause briefly" "~2 s" Yellow
+Write-Step 3 "Show Login / Register screen -- pause briefly" "~2 s" Yellow
 Write-Tip    "Register a fresh account so the flow is obvious to viewers."
 Write-Host ""
-Write-Step 4 "Login succeeds — Chat interface loads" "~1 s" Yellow
+Write-Step 4 "Login succeeds -- Chat interface loads" "~1 s" Yellow
 Write-Host ""
 Write-Step 5 'Type message: "Explain quantum computing in simple terms"' "~2 s" Green
-Write-Tip    "Type at a natural speed — not too fast."
+Write-Tip    "Type at a natural speed -- not too fast."
 Write-Host ""
 Write-Step 6 "Pause and show the AI response appearing (streaming text)" "~3 s" Green
-Write-Tip    "If streaming is not enabled, scroll slowly through the response."
+Write-Tip    "If streaming is not yet enabled, scroll slowly through the response."
 Write-Host ""
-Write-Step 7 "Toggle multi-agent mode  OR  switch LLM provider in settings" "~2 s" Magenta
+Write-Step 7 "Toggle multi-agent mode OR switch LLM provider in Settings" "~2 s" Magenta
 Write-Tip    "Multi-agent: click the robot icon in the chat toolbar."
-Write-Tip    "Provider switch: Settings → General → LLM Provider dropdown."
+Write-Tip    "Provider switch: Settings -> General -> LLM Provider dropdown."
 Write-Host ""
-Write-Step 8 'Send another message: "Compare Python and Rust for systems programming"' "~3 s" Magenta
+Write-Step 8 'Send message: "Compare Python and Rust for systems programming"' "~3 s" Magenta
 Write-Tip    "Show the response appearing, then end the recording."
 Write-Host ""
 
-Write-Host "  ──────────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
-Write-Host "  Total target length: 15 – 20 seconds" -ForegroundColor White
-Write-Host "  ──────────────────────────────────────────────────────────────────" -ForegroundColor DarkGray
+Write-Host "  ----------------------------------------------------------------" -ForegroundColor DarkGray
+Write-Host "  Total target length: 15 - 20 seconds" -ForegroundColor White
+Write-Host "  ----------------------------------------------------------------" -ForegroundColor DarkGray
 Write-Host ""
 
 # ---------------------------------------------------------------------------
-# Step 5 — Post-recording instructions
+# Step 5 -- Post-recording instructions
 # ---------------------------------------------------------------------------
 
-Write-Header "Step 5 — After Recording"
+Write-Header "STEP 5 -- AFTER RECORDING"
 
 Write-Info "Export / optimise your GIF:"
 Write-Host ""
-Write-Host "  Option A — ScreenToGif built-in optimiser:" -ForegroundColor White
-Write-Host "    File → Save As → GIF" -ForegroundColor Gray
+Write-Host "  Option A -- ScreenToGif built-in optimiser:" -ForegroundColor White
+Write-Host "    File -> Save As -> GIF" -ForegroundColor Gray
 Write-Host "    Encoder: FFmpeg  |  Quality: 85  |  FPS: 15" -ForegroundColor Gray
 Write-Host ""
-Write-Host "  Option B — Command-line with gifski (best quality):" -ForegroundColor White
+Write-Host "  Option B -- gifski (best quality):" -ForegroundColor White
 Write-Host "    winget install gifski" -ForegroundColor DarkCyan
 Write-Host "    gifski --fps 15 --quality 85 --width 1280 -o docs\assets\demo.gif frames\*.png" -ForegroundColor DarkCyan
 Write-Host ""
-Write-Host "  Option C — ImageMagick:" -ForegroundColor White
+Write-Host "  Option C -- ImageMagick:" -ForegroundColor White
 Write-Host "    magick convert -delay 7 -loop 0 -layers Optimize frames\*.png docs\assets\demo.gif" -ForegroundColor DarkCyan
 Write-Host ""
 
 Write-Reminder "Check the file size after export:"
 Write-Host "    (Get-Item docs\assets\demo.gif).Length / 1MB" -ForegroundColor DarkCyan
-Write-Host "    Target: < 5 MB  (GitHub README limit for inline GIFs)" -ForegroundColor DarkGray
+Write-Host "    Target: under 5 MB  (GitHub README inline GIF limit)" -ForegroundColor DarkGray
 Write-Host ""
 
-Write-Info "Save the file to:"
-Write-Host "    docs\assets\demo.gif" -ForegroundColor White
+Write-Info "Save the file to:  docs\assets\demo.gif"
 Write-Host ""
-
 Write-Info "Then add it to README.md in the header section:"
 Write-Host '    ![SkillBot Demo](docs/assets/demo.gif)' -ForegroundColor DarkCyan
 Write-Host ""
@@ -276,15 +264,15 @@ Write-Host ""
 # Done
 # ---------------------------------------------------------------------------
 
-Write-Header "All Set — Happy Recording!"
+Write-Header "ALL SET -- HAPPY RECORDING!"
 
 Write-Host "  Quick links:" -ForegroundColor White
-Write-Host "    Web UI      →  $BaseUrl" -ForegroundColor DarkCyan
-Write-Host "    Swagger     →  https://localhost:7101/swagger" -ForegroundColor DarkCyan
-Write-Host "    API health  →  $HealthUrl" -ForegroundColor DarkCyan
+Write-Host "    Web UI      ->  $BaseUrl" -ForegroundColor DarkCyan
+Write-Host "    Swagger     ->  https://localhost:7101/swagger" -ForegroundColor DarkCyan
+Write-Host "    API health  ->  $HealthUrl" -ForegroundColor DarkCyan
 Write-Host ""
 Write-Host "  Useful docker commands:" -ForegroundColor White
-Write-Host "    docker compose logs -f          # tail all logs" -ForegroundColor DarkGray
-Write-Host "    docker compose ps               # check container status" -ForegroundColor DarkGray
-Write-Host "    docker compose down             # stop everything" -ForegroundColor DarkGray
+Write-Host "    docker compose logs -f    # tail all logs" -ForegroundColor DarkGray
+Write-Host "    docker compose ps         # check container status" -ForegroundColor DarkGray
+Write-Host "    docker compose down       # stop everything" -ForegroundColor DarkGray
 Write-Host ""
