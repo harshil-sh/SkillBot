@@ -36,14 +36,8 @@ function Write-Header {
 
 function Write-Step {
     param([int]$Number, [string]$Text, [string]$Duration = "", [ConsoleColor]$Color = "White")
-    Write-Host "  " -NoNewline
-    Write-Host "  Step $Number  " -ForegroundColor Black -BackgroundColor $Color -NoNewline
-    Write-Host "  $Text" -ForegroundColor $Color -NoNewline
-    if ($Duration) {
-        Write-Host "  [$Duration]" -ForegroundColor DarkGray
-    } else {
-        Write-Host ""
-    }
+    $dur = if ($Duration) { "  [$Duration]" } else { "" }
+    Write-Host "  [Step $Number]  $Text$dur" -ForegroundColor $Color
 }
 
 function Write-Tip {
