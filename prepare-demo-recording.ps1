@@ -15,8 +15,8 @@
 param(
     [switch]$SkipDocker,
     [switch]$NoOpen,
-    [string]$BaseUrl   = "http://localhost:5188",
-    [string]$HealthUrl = "http://localhost:5188/health"
+    [string]$BaseUrl   = "http://localhost:8080",
+    [string]$HealthUrl = "http://localhost:8080/health"
 )
 
 # ---------------------------------------------------------------------------
@@ -258,7 +258,7 @@ Write-Header "ALL SET -- HAPPY RECORDING!"
 
 Write-Host "  Quick links:" -ForegroundColor White
 Write-Host "    Web UI      ->  $BaseUrl" -ForegroundColor DarkCyan
-Write-Host "    Swagger     ->  https://localhost:7101/swagger" -ForegroundColor DarkCyan
+Write-Host "    Swagger     ->  http://localhost:8080/swagger" -ForegroundColor DarkCyan
 Write-Host "    API health  ->  $HealthUrl" -ForegroundColor DarkCyan
 Write-Host ""
 Write-Host "  Useful docker commands:" -ForegroundColor White
