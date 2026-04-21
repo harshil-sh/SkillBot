@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.OpenApi;
@@ -213,8 +214,20 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/health");
 
-// Serve Blazor WASM static files and handle SPA routing
-app.UseStaticFiles();
+// Serve Blazor WASM static files — register all MIME types needed by .NET WASM runtime
+var blazorMimeTypes = new FileExtensionContentTypeProvider();
+blazorMimeTypes.Mappings[".wasm"]  = "application/wasm";
+blazorMimeTypes.Mappings[".dat"]   = "application/octet-stream";
+blazorMimeTypes.Mappings[".blat"]  = "application/octet-stream";
+blazorMimeTypes.Mappings[".br"]    = "application/x-br";
+blazorMimeTypes.Mappings[".gz"]    = "application/x-gzip";
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    ContentTypeProvider = blazorMimeTypes,
+    ServeUnknownFileTypes = true,
+    DefaultContentType = "application/octet-stream"
+});
 app.MapFallbackToFile("index.html");
 
 // Register plugins on startup
