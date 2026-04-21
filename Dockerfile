@@ -1,16 +1,18 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# Copy solution and project files for layer-cached restore
-COPY SkillBot.slnx .
+# Copy only the project files needed for Api — enables layer-cached restore
 COPY SkillBot.Core/SkillBot.Core.csproj SkillBot.Core/
 COPY SkillBot.Infrastructure/SkillBot.Infrastructure.csproj SkillBot.Infrastructure/
 COPY SkillBot.Plugins/SkillBot.Plugins.csproj SkillBot.Plugins/
 COPY SkillBot.Api/SkillBot.Api.csproj SkillBot.Api/
-RUN dotnet restore SkillBot.slnx
+RUN dotnet restore SkillBot.Api/SkillBot.Api.csproj
 
 # Copy source and publish
-COPY . .
+COPY SkillBot.Core/ SkillBot.Core/
+COPY SkillBot.Infrastructure/ SkillBot.Infrastructure/
+COPY SkillBot.Plugins/ SkillBot.Plugins/
+COPY SkillBot.Api/ SkillBot.Api/
 RUN dotnet publish SkillBot.Api/SkillBot.Api.csproj -c Release -o /app/publish --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
