@@ -42,26 +42,22 @@ function Write-Step {
 
 function Write-Tip {
     param([string]$Text)
-    Write-Host "  TIP  " -NoNewline -ForegroundColor Yellow
-    Write-Host $Text -ForegroundColor DarkYellow
+    Write-Host "  TIP  $Text" -ForegroundColor Yellow
 }
 
 function Write-Reminder {
     param([string]$Text)
-    Write-Host "  NOTE " -NoNewline -ForegroundColor Magenta
-    Write-Host $Text -ForegroundColor Magenta
+    Write-Host "  NOTE $Text" -ForegroundColor Magenta
 }
 
 function Write-Ok {
     param([string]$Text)
-    Write-Host "  OK   " -NoNewline -ForegroundColor Green
-    Write-Host $Text -ForegroundColor Green
+    Write-Host "  OK   $Text" -ForegroundColor Green
 }
 
 function Write-Info {
     param([string]$Text)
-    Write-Host "  -->  " -NoNewline -ForegroundColor DarkCyan
-    Write-Host $Text -ForegroundColor DarkCyan
+    Write-Host "  -->  $Text" -ForegroundColor DarkCyan
 }
 
 function Wait-ForHealth {
