@@ -1,181 +1,232 @@
-# 🤖 SkillBot — Self-Hosted AI Assistant
+<div align="center">
 
-![Build](https://img.shields.io/badge/build-passing-brightgreen)
-![License](https://img.shields.io/badge/license-MIT-blue)
-![.NET](https://img.shields.io/badge/.NET-10.0-purple)
-![C#](https://img.shields.io/badge/C%23-12-blue)
+# 🤖 SkillBot
 
-**SkillBot** is a production-ready, self-hosted AI assistant built with .NET 10 and Microsoft Semantic Kernel. It supports multiple LLM providers (OpenAI, Claude, Gemini), a Telegram bot interface, a REST API, a console client, multi-agent orchestration, and a plugin system — all in one deployable package.
+### Your AI assistant. Your server. Your rules.
+
+[![CI](https://github.com/harshil-sh/skillbot/actions/workflows/ci.yml/badge.svg)](https://github.com/harshil-sh/skillbot/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/harshil-sh/skillbot/blob/main/LICENSE)
+[![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com)
+[![Blazor](https://img.shields.io/badge/Blazor-WASM-512BD4?logo=blazor&logoColor=white)](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](https://github.com/harshil-sh/skillbot/blob/main/Dockerfile)
+[![GitHub Stars](https://img.shields.io/github/stars/harshil-sh/skillbot?style=social)](https://github.com/harshil-sh/skillbot/stargazers)
+
+**SkillBot** is a production-ready, self-hosted AI assistant powered by .NET 10 and Microsoft Semantic Kernel.  
+Chat with OpenAI, Claude, or Gemini through a beautiful web UI, Telegram bot, REST API, or terminal console.  
+Everything runs on your own infrastructure — your data never leaves your server.
+
+[**Quick Start**](#-quick-start) · [**Features**](#-features) · [**Docs**](#-documentation) · [**Roadmap**](#️-roadmap) · [**Contributing**](#-contributing)
+
+> 📸 **Screenshots coming soon** — the web UI is fully functional; visual walkthroughs are being prepared.
+
+</div>
+
+---
+
+## 💡 Why SkillBot?
+
+Most AI assistant tools are cloud-only, lock you into a single provider, and send your conversations to someone else's servers. SkillBot takes a different approach:
+
+| | SkillBot |
+|---|---|
+| 🔒 **Privacy-first** | Runs entirely on your own server. Conversations stay in your SQLite database, never leaving your infrastructure. |
+| 🔄 **Provider-flexible** | Switch between OpenAI GPT-4, Anthropic Claude, and Google Gemini per-user at runtime — no redeploy needed. |
+| 🌐 **Every interface covered** | One deployment gives you a polished web UI, a Telegram bot, a REST API, and an interactive console. |
+| 🤖 **Multi-agent intelligence** | Route complex tasks to specialised agents (Researcher, Coder, Data Analyst, Writer) that collaborate automatically. |
+| 🛠️ **Extensible by design** | Add capabilities in minutes with the plugin system — just drop in a class with `[Plugin]` and `[KernelFunction]` attributes. |
 
 ---
 
 ## ✨ Features
 
-- 🧠 **Multi-LLM Support** — OpenAI (GPT-4), Anthropic Claude, and Google Gemini; switch per-user at runtime
-- 🤖 **Multi-Agent Orchestration** — Route complex tasks to specialised agents (Research, Coding, Data Analysis, Writing)
-- 📱 **Telegram Bot** — Full-featured bot with slash commands, per-user keys, and provider switching
-- 🌐 **REST API** — ASP.NET Core with JWT authentication, rate limiting, and Swagger UI
-- 💻 **Console Client** — Interactive terminal interface for local use
-- 🔌 **Plugin System** — Reflection-based discovery with `[Plugin]`, `[KernelFunction]`, `[Description]` attributes
-- 🔍 **Web Search** — SerpAPI integration with caching
-- ⚡ **Two-Tier Caching** — In-memory (L1) + SQLite (L2) cache for LLM responses and search results
-- 🛡️ **Security** — JWT auth, rate limiting, input validation, content safety checks
-- ⏰ **Background Tasks** — Hangfire-powered one-time and recurring task scheduling
-- 📊 **Token Tracking** — Per-conversation usage statistics
-- 💾 **SQLite Persistence** — Conversation history and user settings
-- 📝 **Structured Logging** — Serilog with rolling file and console sinks
-- 🖥️ **Web UI** — Blazor WebAssembly SPA with MudBlazor, dark mode, chat, settings, and admin dashboard
+### 🧠 AI & Language Models
+- **Multi-LLM support** — Use OpenAI (GPT-4/4o), Anthropic Claude, or Google Gemini; switch provider per-user at runtime without restarting
+- **Microsoft Semantic Kernel** — Battle-tested orchestration layer with memory, planning, and function calling
+- **Multi-agent orchestration** — Automatically routes tasks to specialised agents: Research, Coding, Data Analysis, and Writing, with single/parallel/sequential strategies
+- **Web search integration** — SerpAPI-powered real-time search with two-tier caching (in-memory + SQLite)
+
+### 🖥️ Interfaces
+- **Blazor WebAssembly UI** — Modern SPA with MudBlazor Material Design: chat, settings, admin dashboard, dark mode, keyboard shortcuts, and full mobile support
+- **Telegram bot** — Full-featured bot with `/start`, `/help`, `/setkey`, `/setprovider`, `/search`, `/multi`, and per-user API key management
+- **REST API** — ASP.NET Core with JWT authentication, Swagger UI, rate limiting, and content safety middleware
+- **Console client** — Interactive terminal interface with single-agent and multi-agent modes
+
+### 🔌 Platform & Infrastructure
+- **Plugin system** — Reflection-based discovery using `[Plugin]`, `[KernelFunction]`, and `[Description]` attributes; built-in plugins for Calculator, Weather, Time, and Web Search
+- **Two-tier caching** — L1 in-memory + L2 SQLite cache for LLM responses keyed by SHA-256 content hash
+- **SQLite persistence** — Conversation history and user settings via EF Core; zero configuration, file-based
+- **Background task scheduling** — Hangfire-powered one-time and recurring jobs; cache cleanup, usage reports
+- **Token usage tracking** — Per-user, per-conversation token consumption statistics
+
+### 🛡️ Security
+- **JWT authentication** — Configurable expiry, issuer, and audience; per-user API key storage (encrypted at rest)
+- **Rate limiting** — Per-user and per-endpoint request throttling, configurable via appsettings
+- **Input validation** — Length limits, content safety checks, and prompt-injection detection
+- **Structured logging** — Serilog with rolling file and console sinks; configurable log levels per namespace
 
 ---
 
-## 🖥️ Web Interface
+## ⚡ Quick Start
 
-SkillBot includes a modern **Blazor WebAssembly** single-page application that provides a full-featured browser-based UI without requiring any server-side rendering.
-
-### Web UI Features
-
-- 💬 **Chat Interface** — Conversational AI with markdown rendering and conversation history
-- 🤖 **Multi-Agent Mode** — Toggle between single-agent and multi-agent orchestration in one click
-- ⚙️ **Settings Dashboard** — Configure API keys, preferred LLM provider, and appearance
-- 🎨 **Dark / Light Mode** — Theme persisted in `localStorage`, no flash on reload
-- 👤 **Account Management** — Profile, password change, and account deletion
-- 🛡️ **Admin Dashboard** — User management, usage analytics, and system monitoring
-- 📱 **Responsive** — Works on desktop, tablet, and mobile browsers
-
-### Access URLs
-
-| Service | Development URL |
-|---------|----------------|
-| SkillBot API | `https://localhost:7101` |
-| Web UI | `http://localhost:5000` |
-| Swagger UI | `https://localhost:7101/swagger` |
-
-### Quick Start (Web UI)
+### Option 1 — Docker (Recommended)
 
 ```bash
-# Run the API first
-dotnet run --project SkillBot.Api/SkillBot.Api.csproj
+# Clone the repository
+git clone https://github.com/harshil-sh/skillbot.git
+cd skillbot
 
-# In a second terminal, run the web UI
-dotnet run --project SkillBot.Web/SkillBot.Web.csproj
+# Copy the example environment file and fill in your keys
+cp .env.example .env
 
-# Open http://localhost:5000 in your browser
+# Edit .env with your API key and a JWT secret (min 32 characters)
+# OPENAI_API_KEY=sk-...
+# JWT_SECRET=your-super-secret-key-at-least-32-chars
+
+# Start everything (API + Web UI + background jobs)
+docker compose up -d
+
+# The API is available at http://localhost:8080
+# The web UI is served by the API at http://localhost:8080
 ```
 
-See **[docs/frontend/DEVELOPMENT.md](docs/frontend/DEVELOPMENT.md)** for full setup instructions and **[docs/USER_GUIDE_WEB.md](docs/USER_GUIDE_WEB.md)** for usage instructions.
+That's it. Open `http://localhost:8080`, register an account, and start chatting.
 
----
+### Option 2 — Manual (.NET SDK)
 
-## 🚀 Quick Start
-
-### Prerequisites
-
-- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- An API key for at least one LLM provider (OpenAI / Claude / Gemini)
-
-### Manual Setup
+**Prerequisites:** [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) · An API key for OpenAI, Claude, or Gemini
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/harshil-sh/SkillBot.git
-cd SkillBot
-
-# 2. Restore packages
+# Clone and restore
+git clone https://github.com/harshil-sh/skillbot.git
+cd skillbot
 dotnet restore SkillBot.slnx
 
-# 3. Set your API key (development)
+# Set secrets (development only)
 cd SkillBot.Api
-dotnet user-secrets set "SkillBot:ApiKey" "sk-your-openai-key"
-dotnet user-secrets set "JwtSettings:Secret" "your-super-secret-key-min-32-chars-long"
+dotnet user-secrets set "SkillBot:ApiKey"     "sk-your-openai-key"
+dotnet user-secrets set "JwtSettings:Secret"  "your-super-secret-jwt-key-min-32-chars"
+cd ..
 
-# 4. Build and run the API
+# Apply the database migration and start
 dotnet run --project SkillBot.Api/SkillBot.Api.csproj
-# API: https://localhost:7101  |  Swagger: https://localhost:7101/
 ```
 
-### Console Client
+| Service | URL |
+|---------|-----|
+| REST API | `https://localhost:7101` |
+| Swagger UI | `https://localhost:7101/swagger` |
+| Web UI (dev) | `http://localhost:5000` |
 
 ```bash
-# Single-agent mode
-dotnet run --project SkillBot.Console/SkillBot.Console.csproj
+# (Optional) Run the web UI separately in development
+dotnet run --project SkillBot.Web/SkillBot.Web.csproj
 
-# Multi-agent mode
+# (Optional) Launch the console client
+dotnet run --project SkillBot.Console/SkillBot.Console.csproj
 dotnet run --project SkillBot.Console/SkillBot.Console.csproj -- --multi-agent
 ```
 
-### Docker (Coming Soon)
+### Option 3 — Setup Script
 
 ```bash
-docker compose up
+# Linux / macOS
+chmod +x scripts/setup.sh && ./scripts/setup.sh
+
+# Windows (PowerShell)
+.\scripts\setup.ps1
 ```
+
+The script checks prerequisites, generates a JWT secret, guides you through the `.env` configuration, and starts the application with Docker Compose.
 
 ---
 
-## 🏗️ Architecture Overview
+## 🏗️ Architecture
+
+SkillBot follows a clean layered architecture with clear dependency rules:
 
 ```
-┌─────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────┐
 │  Clients                                                  │
-│  ┌─────────────┐  ┌──────────────┐  ┌─────────────────┐ │
-│  │  Telegram   │  │  REST API    │  │  Console Client │ │
-│  │    Bot      │  │  (JWT Auth)  │  │                 │ │
-│  └──────┬──────┘  └──────┬───────┘  └────────┬────────┘ │
-└─────────┼────────────────┼───────────────────┼──────────┘
-          │                │                   │
-          ▼                ▼                   ▼
-┌─────────────────────────────────────────────────────────┐
+│  ┌────────────┐  ┌─────────────┐  ┌──────────────────┐  │
+│  │ Web UI     │  │ Telegram    │  │ Console Client   │  │
+│  │ (Blazor    │  │ Bot         │  │ (API client)     │  │
+│  │  WASM)     │  │             │  │                  │  │
+│  └─────┬──────┘  └──────┬──────┘  └────────┬─────────┘  │
+└────────┼────────────────┼──────────────────┼────────────┘
+         │                │                  │
+         ▼                ▼                  ▼
+┌──────────────────────────────────────────────────────────┐
 │  SkillBot.Api  (ASP.NET Core)                            │
-│  Controllers · JWT · Rate Limiting · Content Safety      │
-│  Hangfire · EF Core SQLite · Serilog                     │
-└────────────────────────┬────────────────────────────────┘
-                         │
-          ┌──────────────▼──────────────┐
-          │  SkillBot.Infrastructure     │
-          │  SemanticKernelEngine        │
-          │  Multi-Agent Orchestrator    │
-          │  LLM Providers (OAI/Claude/  │
-          │    Gemini)                   │
-          │  Two-Tier Cache              │
-          └──────────────┬──────────────┘
-                         │
-          ┌──────────────▼──────────────┐
-          │  SkillBot.Core               │
-          │  Interfaces · Models         │
-          │  Domain Contracts            │
-          └─────────────────────────────┘
+│  Auth · Rate Limiting · Content Safety · Hangfire        │
+│  EF Core → SQLite · Serilog · Swagger                    │
+└──────────────────────┬───────────────────────────────────┘
+                       │
+         ┌─────────────▼─────────────┐
+         │  SkillBot.Infrastructure  │
+         │  SemanticKernelEngine     │
+         │  LlmTaskRouter            │
+         │  AgentOrchestrator        │
+         │  LLM Providers            │
+         │  Two-Tier Cache           │
+         │  Channel Manager          │
+         └─────────────┬─────────────┘
+                       │
+         ┌─────────────▼─────────────┐
+         │  SkillBot.Core            │
+         │  Interfaces · Models      │
+         │  Domain Contracts         │
+         └───────────────────────────┘
 ```
 
-Projects:
+| Project | Responsibility |
+|---------|---------------|
+| `SkillBot.Core` | Interfaces, domain models, shared contracts — zero external dependencies |
+| `SkillBot.Infrastructure` | Semantic Kernel, agent orchestration, LLM providers, channels, cache |
+| `SkillBot.Api` | ASP.NET Core host, JWT auth, EF Core, Hangfire background jobs |
+| `SkillBot.Console` | Authenticated terminal client that calls the API |
+| `SkillBot.Plugins` | Calculator, Weather, Time, and SerpAPI search plugins |
+| `SkillBot.Web` | Blazor WebAssembly SPA (MudBlazor 9.x) |
+| `SkillBot.Tests.Unit` | 50 unit tests — services, LLM factory, channel manager |
+| `SkillBot.Tests.Integration` | 15 integration tests — auth, chat, settings, Telegram webhook |
+| `SkillBot.Tests.E2E` | Playwright end-to-end tests (require live server, marked `[Explicit]`) |
 
-| Project | Role |
-|---|---|
-| `SkillBot.Core` | Interfaces, domain models, no external dependencies |
-| `SkillBot.Infrastructure` | Semantic Kernel, agents, cache, LLM providers, channels |
-| `SkillBot.Api` | ASP.NET Core host, JWT auth, EF Core, Hangfire |
-| `SkillBot.Console` | Interactive terminal client that calls the API |
-| `SkillBot.Plugins` | Calculator, Weather, Time, SerpAPI search plugins |
-| `SkillBot.Web` | Blazor WebAssembly SPA with MudBlazor 9.x |
+---
+
+## 🆚 SkillBot vs ChatGPT / Other Tools
+
+| Feature | SkillBot | ChatGPT | Ollama | LiteLLM |
+|---------|----------|---------|--------|---------|
+| **Self-hosted** | ✅ | ❌ | ✅ | ✅ |
+| **Your data stays local** | ✅ | ❌ | ✅ | Varies |
+| **OpenAI support** | ✅ | ✅ | ❌ | ✅ |
+| **Claude support** | ✅ | ❌ | ❌ | ✅ |
+| **Gemini support** | ✅ | ❌ | ❌ | ✅ |
+| **Telegram bot** | ✅ | ❌ | ❌ | ❌ |
+| **Web UI included** | ✅ | ✅ | ✅ | ❌ |
+| **REST API** | ✅ | API only | ✅ | ✅ |
+| **Console client** | ✅ | ❌ | ✅ | ❌ |
+| **Multi-agent orchestration** | ✅ | ❌ | ❌ | ❌ |
+| **Plugin system** | ✅ | ✅ (GPTs) | ❌ | ❌ |
+| **Per-user API keys** | ✅ | N/A | ❌ | ❌ |
+| **Web search** | ✅ | ✅ (Plus) | ❌ | ❌ |
+| **Docker deployment** | ✅ | N/A | ✅ | ✅ |
+| **Free / open source** | ✅ MIT | ❌ | ✅ MIT | ✅ MIT |
 
 ---
 
 ## ⚙️ Configuration
 
-Edit `SkillBot.Api/appsettings.json` (or use environment variables / `dotnet user-secrets`):
+The most important settings in `SkillBot.Api/appsettings.json`:
 
 ```json
 {
-  "ConnectionStrings": {
-    "SkillBot": "Data Source=skillbot.db"
-  },
   "JwtSettings": {
     "Secret": "your-super-secret-key-min-32-chars-long",
-    "Issuer": "SkillBot",
-    "Audience": "SkillBotUsers",
     "ExpirationMinutes": 1440
   },
   "SkillBot": {
-    "ApiKey": "your-openai-api-key",
-    "Model": "gpt-4",
+    "ApiKey":  "sk-your-openai-key",
+    "Model":   "gpt-4",
     "Caching": { "Enabled": true }
   },
   "SerpApi": {
@@ -183,142 +234,181 @@ Edit `SkillBot.Api/appsettings.json` (or use environment variables / `dotnet use
   },
   "Channels": {
     "Telegram": {
-      "Enabled": false,
-      "BotToken": "",
+      "Enabled":    false,
+      "BotToken":   "",
+      "BotUsername": "",
       "WebhookUrl": "https://yourdomain.com/api/webhook/telegram"
     }
   }
 }
 ```
 
-See **[docs/CONFIGURATION.md](docs/CONFIGURATION.md)** for all options.
-
----
-
-## 📡 API Usage Examples
-
-```bash
-BASE=https://localhost:7101
-
-# Register a user
-curl -k -X POST $BASE/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"user@example.com","username":"alice","password":"Secret123!"}'
-
-# Login and get JWT token
-TOKEN=$(curl -k -s -X POST $BASE/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"user@example.com","password":"Secret123!"}' | jq -r .token)
-
-# Send a chat message
-curl -k -X POST $BASE/api/chat \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"message":"What is 42 * 37?"}'
-
-# Multi-agent task
-curl -k -X POST $BASE/api/multi-agent/chat \
-  -H "Content-Type: application/json" \
-  -d '{"task":"Research quantum computing and write a summary"}'
-
-# List available plugins
-curl -k $BASE/api/plugins
-```
-
-See **[docs/API.md](docs/API.md)** for full endpoint reference.
-
----
-
-## 📱 Telegram Bot
-
-1. Create a bot with [@BotFather](https://t.me/BotFather) and copy the token
-2. Set `Channels:Telegram:BotToken` and `Channels:Telegram:Enabled: true`
-3. Expose your API via [ngrok](https://ngrok.com) in development: `ngrok http 7101`
-4. Set `Channels:Telegram:WebhookUrl` to `https://<ngrok-subdomain>/api/webhook/telegram`
-
-Available commands: `/start`, `/help`, `/settings`, `/setkey`, `/setprovider`, `/search`, `/multi`
-
-See **[docs/TELEGRAM.md](docs/TELEGRAM.md)** for full setup guide.
-
----
-
-## 🔌 Adding a Plugin
-
-```csharp
-using Microsoft.SemanticKernel;
-using System.ComponentModel;
-using SkillBot.Infrastructure.Plugins;
-
-[Plugin(Name = "MyPlugin", Description = "Does something useful")]
-public class MyPlugin
-{
-    [KernelFunction("my_function")]
-    [Description("Transforms the input text")]
-    public string Transform([Description("The text to transform")] string input)
-        => input.ToUpperInvariant();
-}
-
-// Register in SkillBot.Api/Program.cs or SkillBot.Console/Program.cs
-pluginProvider.RegisterPlugin(new MyPlugin());
-```
-
-See **[docs/PLUGIN-DEVELOPMENT.md](docs/PLUGIN-DEVELOPMENT.md)** for a full guide.
+Every value can be overridden with environment variables (e.g. `SkillBot__ApiKey=sk-...`).  
+See **[docs/CONFIGURATION.md](docs/CONFIGURATION.md)** for the complete reference.
 
 ---
 
 ## 📚 Documentation
 
+### User Guides
 | Document | Description |
-|---|---|
-| [docs/INSTALLATION.md](docs/INSTALLATION.md) | Step-by-step installation guide |
-| [docs/CONFIGURATION.md](docs/CONFIGURATION.md) | All configuration options |
-| [docs/API.md](docs/API.md) | Full REST API reference |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture deep-dive |
-| [docs/TELEGRAM.md](docs/TELEGRAM.md) | Telegram bot setup |
-| [docs/PLUGIN-DEVELOPMENT.md](docs/PLUGIN-DEVELOPMENT.md) | Writing custom plugins |
-| [docs/CHANNELS.md](docs/CHANNELS.md) | Adding new messaging channels |
-| [docs/USER_GUIDE_WEB.md](docs/USER_GUIDE_WEB.md) | Web UI user guide |
-| [docs/ADMIN_GUIDE.md](docs/ADMIN_GUIDE.md) | Administrator guide |
-| [docs/DEPLOYMENT_WEB.md](docs/DEPLOYMENT_WEB.md) | Web UI deployment (Docker/nginx/IIS) |
-| [docs/TROUBLESHOOTING_WEB.md](docs/TROUBLESHOOTING_WEB.md) | Web UI troubleshooting |
+|----------|-------------|
+| [docs/INSTALLATION.md](docs/INSTALLATION.md) | Prerequisites, secrets setup, first run |
+| [docs/CONFIGURATION.md](docs/CONFIGURATION.md) | Every `appsettings.json` key documented |
+| [docs/USER_GUIDE_WEB.md](docs/USER_GUIDE_WEB.md) | Web UI walkthrough |
+| [docs/ADMIN_GUIDE.md](docs/ADMIN_GUIDE.md) | Admin dashboard and user management |
+| [docs/TELEGRAM.md](docs/TELEGRAM.md) | BotFather setup, webhook config, commands |
 | [docs/FAQ_WEB.md](docs/FAQ_WEB.md) | Frequently asked questions |
-| [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md) | WCAG 2.1 AA accessibility guide |
+
+### API & Deployment
+| Document | Description |
+|----------|-------------|
+| [docs/API.md](docs/API.md) | Full REST endpoint reference with `curl` examples |
+| [docs/DEPLOYMENT_WEB.md](docs/DEPLOYMENT_WEB.md) | Docker, nginx, GitHub Pages, Azure, IIS |
+| [docs/TROUBLESHOOTING_WEB.md](docs/TROUBLESHOOTING_WEB.md) | Common problems and solutions |
+| [docs/RELEASE_CHECKLIST.md](docs/RELEASE_CHECKLIST.md) | Pre-release checklist |
+
+### Developer Docs
+| Document | Description |
+|----------|-------------|
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture deep-dive |
 | [docs/frontend/ARCHITECTURE.md](docs/frontend/ARCHITECTURE.md) | Blazor frontend architecture |
 | [docs/frontend/COMPONENTS.md](docs/frontend/COMPONENTS.md) | Component reference |
-| [docs/frontend/STATE_MANAGEMENT.md](docs/frontend/STATE_MANAGEMENT.md) | State management patterns |
-| [docs/frontend/API_INTEGRATION.md](docs/frontend/API_INTEGRATION.md) | API client reference |
+| [docs/frontend/API_INTEGRATION.md](docs/frontend/API_INTEGRATION.md) | Frontend API client |
 | [docs/frontend/STYLING.md](docs/frontend/STYLING.md) | MudBlazor theme and CSS guide |
-| [docs/frontend/DEVELOPMENT.md](docs/frontend/DEVELOPMENT.md) | Frontend developer setup |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Contributor guide |
+| [docs/frontend/DEVELOPMENT.md](docs/frontend/DEVELOPMENT.md) | Frontend dev environment setup |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute |
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
+
+---
+
+## 🗺️ Roadmap
+
+### v1.0 — Foundation ✅
+- [x] Multi-LLM support (OpenAI, Claude, Gemini)
+- [x] REST API with JWT authentication
+- [x] Telegram bot with slash commands
+- [x] Console client (single-agent and multi-agent)
+- [x] Plugin system with built-in plugins
+- [x] Two-tier caching (memory + SQLite)
+- [x] Rate limiting and content safety
+- [x] Blazor WebAssembly web UI
+- [x] Admin dashboard
+- [x] Docker deployment
+- [x] CI/CD pipeline
+- [x] Full test suite (unit + integration + E2E)
+
+### v1.1 — User Experience 🚧
+- [ ] Streaming responses (Server-Sent Events)
+- [ ] Conversation export (JSON, Markdown, PDF)
+- [ ] Voice input support (Web Speech API)
+- [ ] File upload and document Q&A
+- [ ] Conversation sharing (public links)
+- [ ] Custom system prompts per conversation
+
+### v1.2 — Integrations
+- [ ] Discord bot channel
+- [ ] Slack bot channel
+- [ ] OpenRouter API support (access 50+ models)
+- [ ] Local model support via Ollama
+- [ ] Webhook outbound notifications
+- [ ] Google Calendar / GitHub / Jira plugins
+
+### v1.3 — Enterprise
+- [ ] Team workspaces and shared conversations
+- [ ] LDAP / SSO authentication
+- [ ] Audit logging
+- [ ] Kubernetes Helm chart
+- [ ] Usage quotas and billing tracking
+- [ ] Conversation analytics dashboard
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions of all kinds are welcome — bug fixes, features, documentation, tests, and design feedback.
 
 ```bash
-# Run integration tests
-powershell -File .\scripts\Test-SkillBot-AllFeatures.ps1
+# Fork and clone
+git clone https://github.com/<your-username>/skillbot.git
+cd skillbot
 
-# Focused test scripts
-powershell -File .\test-settings.ps1
-powershell -File .\test-console.ps1
-powershell -File .\test-database.ps1
+# Create a feature branch
+git checkout -b feature/my-feature
+
+# Build and test
+dotnet build SkillBot.slnx
+dotnet test SkillBot.Tests.Unit
+dotnet test SkillBot.Tests.Integration
+
+# Run the full integration test suite
+powershell -File .\scripts\Test-SkillBot-AllFeatures.ps1 -SkipBuild
+
+# Push and open a PR
+git push origin feature/my-feature
 ```
+
+Please read **[CONTRIBUTING.md](CONTRIBUTING.md)** before submitting a pull request — it covers code style, commit message format, and the review process.
+
+---
+
+## 🆘 Support
+
+| Channel | Link |
+|---------|------|
+| 🐛 Bug reports | [GitHub Issues](https://github.com/harshil-sh/skillbot/issues/new?template=bug_report.md) |
+| 💡 Feature requests | [GitHub Discussions](https://github.com/harshil-sh/skillbot/discussions/new?category=ideas) |
+| ❓ Questions | [GitHub Discussions — Q&A](https://github.com/harshil-sh/skillbot/discussions/new?category=q-a) |
+| 📧 Direct contact | [Harshil.sh@gmail.com](mailto:Harshil.sh@gmail.com) |
+
+If SkillBot is useful to you, please consider giving it a ⭐ on GitHub — it genuinely helps with visibility.
 
 ---
 
 ## 📄 License
 
-MIT License — see [LICENSE](LICENSE) for details.
+```
+MIT License
+
+Copyright (c) 2026 Harshil Shah
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
 
 ---
 
-## 🙏 Acknowledgments
+## 🙏 Acknowledgements
 
-- [Microsoft Semantic Kernel](https://github.com/microsoft/semantic-kernel)
-- [Hangfire](https://www.hangfire.io/)
-- [Serilog](https://serilog.net/)
-- [Telegram.Bot](https://github.com/TelegramBots/Telegram.Bot)
+SkillBot is built on the shoulders of some excellent open-source projects:
+
+- [Microsoft Semantic Kernel](https://github.com/microsoft/semantic-kernel) — AI orchestration framework
+- [MudBlazor](https://mudblazor.com) — Blazor component library
+- [Hangfire](https://www.hangfire.io) — Background job processing
+- [Serilog](https://serilog.net) — Structured logging
+- [Telegram.Bot](https://github.com/TelegramBots/Telegram.Bot) — Telegram Bot API client
+- [Markdig](https://github.com/xoofx/markdig) — Markdown processor for .NET
+- [Blazored.LocalStorage](https://github.com/Blazored/LocalStorage) — localStorage for Blazor
+
+---
+
+<div align="center">
+
+Made with ❤️ by [Harshil Shah](https://github.com/harshil-sh)
+
+</div>
