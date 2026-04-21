@@ -1,3 +1,10 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build-web
+WORKDIR /src
+COPY SkillBot.Web/SkillBot.Web.csproj SkillBot.Web/
+RUN dotnet restore SkillBot.Web/SkillBot.Web.csproj
+COPY SkillBot.Web/ SkillBot.Web/
+RUN dotnet publish SkillBot.Web/SkillBot.Web.csproj -c Release -o /app/web-publish --nologo
+
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
@@ -25,6 +32,7 @@ RUN useradd --no-create-home --shell /bin/false appuser \
 USER appuser
 
 COPY --from=build /app/publish .
+COPY --from=build-web /app/web-publish/wwwroot ./wwwroot
 
 EXPOSE 8080
 

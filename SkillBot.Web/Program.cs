@@ -10,8 +10,11 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5188";
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseUrl) });
+var apiBaseUrl = builder.Configuration["ApiBaseUrl"];
+var baseUri = string.IsNullOrEmpty(apiBaseUrl)
+    ? new Uri(builder.HostEnvironment.BaseAddress)
+    : new Uri(apiBaseUrl);
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = baseUri });
 
 builder.Services.AddMudServices();
 builder.Services.AddBlazoredLocalStorage();

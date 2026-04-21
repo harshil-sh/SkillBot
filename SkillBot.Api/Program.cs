@@ -184,16 +184,13 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "SkillBot API v1");
-        options.RoutePrefix = string.Empty; // Serve Swagger UI at root
-        options.DocumentTitle = "SkillBot API Documentation";
-    });
-}
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "SkillBot API v1");
+    options.RoutePrefix = "swagger";
+    options.DocumentTitle = "SkillBot API Documentation";
+});
 
 // Middleware pipeline
 app.UseMiddleware<ErrorHandlingMiddleware>();
@@ -215,6 +212,10 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHealthChecks("/health");
+
+// Serve Blazor WASM static files and handle SPA routing
+app.UseStaticFiles();
+app.MapFallbackToFile("index.html");
 
 // Register plugins on startup
 using (var scope = app.Services.CreateScope())
