@@ -199,6 +199,9 @@ package-lock.json
 # Custom Ignores
 # ====================
 
+## Test coverage reports
+coverage/
+
 ## Add project-specific ignores below this line
 
 ## Local full E2E test script (contains hardcoded test credentials, developer-only)

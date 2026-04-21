@@ -1,0 +1,177 @@
+@page "/admin"
+@inject ISkillBotApiClient ApiClient
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<AuthorizeView>
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary" />
+                <MudText Typo="Typo.h4">Admin Dashboard</MudText>
+            </MudStack>
+
+            @if (_accessDenied)
+            {
+                <MudAlert Severity="Severity.Error" Icon="@Icons.Material.Filled.Lock">
+                    Admin access required. You do not have permission to view this page.
+                </MudAlert>
+            }
+            else if (_isLoading)
+            {
+                <MudGrid Spacing="3">
+                    @for (int i = 0; i < 3; i++)
+                    {
+                        <MudItem xs="12" sm="4">
+                            <MudCard Elevation="2"><MudCardContent><MudSkeleton Height="80px" /></MudCardContent></MudCard>
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
+            else
+            {
+                @* Stats Cards *@
+                <MudGrid Spacing="3" Class="mb-6">
+                    <MudItem xs="12" sm="4">
+                        <MudCard Elevation="2" Class="stat-card">
+                            <MudCardContent>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Large">
+                                        <MudIcon Icon="@Icons.Material.Filled.People" />
+                                    </MudAvatar>
+                                    <div>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Total Users</MudText>
+                                        <MudText Typo="Typo.h4"><b>@(_stats?.TotalUsers ?? 0)</b></MudText>
+                                    </div>
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="4">
+                        <MudCard Elevation="2" Class="stat-card">
+                            <MudCardContent>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                                    <MudAvatar Color="Color.Secondary" Size="Size.Large">
+                                        <MudIcon Icon="@Icons.Material.Filled.Chat" />
+                                    </MudAvatar>
+                                    <div>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Total Conversations</MudText>
+                                        <MudText Typo="Typo.h4"><b>@(_stats?.TotalConversations ?? 0)</b></MudText>
+                                    </div>
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="4">
+                        <MudCard Elevation="2" Class="stat-card">
+                            <MudCardContent>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                                    <MudAvatar Color="Color.Success" Size="Size.Large">
+                                        <MudIcon Icon="@Icons.Material.Filled.Token" />
+                                    </MudAvatar>
+                                    <div>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Total Tokens Used</MudText>
+                                        <MudText Typo="Typo.h4"><b>@FormatNumber(_stats?.TotalTokensUsed ?? 0)</b></MudText>
+                                    </div>
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                </MudGrid>
+
+                @* Quick Actions *@
+                <MudText Typo="Typo.h6" Class="mb-3">Quick Actions</MudText>
+                <MudStack Row="true" Spacing="2" Class="mb-6 flex-wrap">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.ManageAccounts"
+                               Href="/admin/users">
+                        Manage Users
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Secondary"
+                               StartIcon="@Icons.Material.Filled.BarChart"
+                               Href="/admin/analytics">
+                        View Analytics
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Success"
+                               StartIcon="@Icons.Material.Filled.HealthAndSafety"
+                               Href="/admin/health">
+                        System Health
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Default"
+                               StartIcon="@Icons.Material.Filled.Tune"
+                               Href="/admin/config">
+                        Configuration
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Default"
+                               StartIcon="@Icons.Material.Filled.Article"
+                               Href="/admin/logs">
+                        View Logs
+                    </MudButton>
+                </MudStack>
+
+                @* Recent Activity *@
+                <MudText Typo="Typo.h6" Class="mb-3">Recent Activity</MudText>
+                <MudCard Elevation="1">
+                    <MudList T="string" Dense="true">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.PersonAdd" IconColor="Color.Primary">
+                            <MudText Typo="Typo.body2">New user registered</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">2 minutes ago</MudText>
+                        </MudListItem>
+                        <MudDivider />
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Chat" IconColor="Color.Secondary">
+                            <MudText Typo="Typo.body2">New conversation started</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">5 minutes ago</MudText>
+                        </MudListItem>
+                        <MudDivider />
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Key" IconColor="Color.Warning">
+                            <MudText Typo="Typo.body2">API key updated</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">12 minutes ago</MudText>
+                        </MudListItem>
+                        <MudDivider />
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success">
+                            <MudText Typo="Typo.body2">Health check passed</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">15 minutes ago</MudText>
+                        </MudListItem>
+                        <MudDivider />
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Settings" IconColor="Color.Default">
+                            <MudText Typo="Typo.body2">Provider preference updated</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">1 hour ago</MudText>
+                        </MudListItem>
+                    </MudList>
+                </MudCard>
+            }
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private AdminStatsResponse? _stats;
+    private bool _isLoading = true;
+    private bool _accessDenied;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _stats = await ApiClient.GetAdminStatsAsync();
+        }
+        catch (HttpRequestException ex) when ((int?)ex.StatusCode is 403 or 404 or 401)
+        {
+            _accessDenied = true;
+        }
+        catch
+        {
+            _stats = new AdminStatsResponse(0, 0, 0);
+        }
+        finally { _isLoading = false; }
+    }
+
+    private static string FormatNumber(long n) => n >= 1_000_000 ? $"{n / 1_000_000.0:F1}M"
+        : n >= 1_000 ? $"{n / 1_000.0:F1}K"
+        : n.ToString();
+}

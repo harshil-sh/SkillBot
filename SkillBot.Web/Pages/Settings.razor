@@ -1,0 +1,62 @@
+@page "/settings"
+@inject ISkillBotApiClient ApiClient
+@inject ISnackbar Snackbar
+
+<AuthorizeView>
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.Settings" Color="Color.Primary" />
+                <MudText Typo="Typo.h4">Settings</MudText>
+            </MudStack>
+
+            @if (_isLoading)
+            {
+                <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+            }
+
+            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" TabPanelsClass="pa-6">
+                <MudTabPanel Text="General" Icon="@Icons.Material.Filled.Tune">
+                    <GeneralSettings />
+                </MudTabPanel>
+                <MudTabPanel Text="API Keys" Icon="@Icons.Material.Filled.Key">
+                    <ApiKeysSettings Settings="@_settings" OnSettingsChanged="@LoadSettingsAsync" />
+                </MudTabPanel>
+                <MudTabPanel Text="Appearance" Icon="@Icons.Material.Filled.Palette">
+                    <AppearanceSettings />
+                </MudTabPanel>
+                <MudTabPanel Text="Privacy" Icon="@Icons.Material.Filled.Lock">
+                    <PrivacySettings />
+                </MudTabPanel>
+                <MudTabPanel Text="About" Icon="@Icons.Material.Filled.Info">
+                    <AboutSettings />
+                </MudTabPanel>
+            </MudTabs>
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private UserSettingsResponse? _settings;
+    private bool _isLoading;
+
+    protected override async Task OnInitializedAsync() => await LoadSettingsAsync();
+
+    private async Task LoadSettingsAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            _settings = await ApiClient.GetSettingsAsync();
+        }
+        catch { }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+}

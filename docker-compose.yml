@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  skillbot:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__SkillBot=Data Source=/app/data/skillbot.db
+      - JwtSettings__Secret=${JWT_SECRET}
+      - JwtSettings__Issuer=SkillBot
+      - JwtSettings__Audience=SkillBotUsers
+      - SkillBot__ApiKey=${OPENAI_API_KEY}
+      - SerpApi__ApiKey=${SERP_API_KEY}
+      - Channels__Telegram__Enabled=${TELEGRAM_ENABLED:-false}
+      - Channels__Telegram__BotToken=${TELEGRAM_BOT_TOKEN}
+      - Channels__Telegram__BotUsername=${TELEGRAM_BOT_USERNAME}
+      - Channels__Telegram__WebhookUrl=${TELEGRAM_WEBHOOK_URL}
+    volumes:
+      - skillbot_data:/app/data
+      - skillbot_logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  skillbot_data:
+  skillbot_logs:

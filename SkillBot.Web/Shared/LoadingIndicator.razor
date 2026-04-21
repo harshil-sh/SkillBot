@@ -1,0 +1,17 @@
+@if (IsLoading)
+{
+    <MudOverlay Visible="true" DarkBackground="true" ZIndex="9999">
+        <MudStack AlignItems="AlignItems.Center" Spacing="2">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+            @if (!string.IsNullOrEmpty(Message))
+            {
+                <MudText Color="Color.Surface">@Message</MudText>
+            }
+        </MudStack>
+    </MudOverlay>
+}
+
+@code {
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public string? Message { get; set; }
+}

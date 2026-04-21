@@ -4,4 +4,8 @@
   <Project Path="SkillBot.Core/SkillBot.Core.csproj" />
   <Project Path="SkillBot.Infrastructure/SkillBot.Infrastructure.csproj" />
   <Project Path="SkillBot.Plugins/SkillBot.Plugins.csproj" />
+  <Project Path="SkillBot.Tests.E2E/SkillBot.Tests.E2E.csproj" />
+  <Project Path="SkillBot.Tests.Integration/SkillBot.Tests.Integration.csproj" />
+  <Project Path="SkillBot.Tests.Unit/SkillBot.Tests.Unit.csproj" />
+  <Project Path="SkillBot.Web/SkillBot.Web.csproj" />
 </Solution>

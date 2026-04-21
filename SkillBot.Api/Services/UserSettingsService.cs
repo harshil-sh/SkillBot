@@ -1,4 +1,4 @@
-using SkillBot.Api.Models.Settings;
+using SkillBot.Core.Services;
 using SkillBot.Infrastructure.Repositories;
 
 namespace SkillBot.Api.Services;
@@ -8,9 +8,9 @@ public class UserSettingsService : IUserSettingsService
     // LLM providers — valid for both api-key and preferred-provider endpoints
     private static readonly HashSet<string> ValidProviders = ["openai", "claude", "gemini"];
 
-    // Extended set for api-key updates — includes channel tokens and search keys
+    // Extended set for api-key updates — includes search keys
     private static readonly HashSet<string> ValidApiKeyProviders =
-        [..ValidProviders, "telegram", "serpapi"];
+        [..ValidProviders, "serpapi"];
 
     private readonly IUserRepository _userRepository;
     private readonly ILogger<UserSettingsService> _logger;
@@ -21,19 +21,18 @@ public class UserSettingsService : IUserSettingsService
         _logger = logger;
     }
 
-    public async Task<UserSettingsResponse> GetSettingsAsync(string userId)
+    public async Task<UserSettings> GetSettingsAsync(string userId)
     {
         var user = await _userRepository.GetByIdAsync(userId)
             ?? throw new KeyNotFoundException($"User {userId} not found.");
 
-        return new UserSettingsResponse
+        return new UserSettings
         {
-            PreferredProvider  = user.PreferredProvider,
-            HasOpenAiKey       = !string.IsNullOrEmpty(user.OpenAiApiKey),
-            HasClaudeKey       = !string.IsNullOrEmpty(user.ClaudeApiKey),
-            HasGeminiKey       = !string.IsNullOrEmpty(user.GeminiApiKey),
-            HasTelegramToken   = !string.IsNullOrEmpty(user.TelegramBotToken),
-            HasSerpApiKey      = !string.IsNullOrEmpty(user.SerpApiKey)
+            PreferredProvider = user.PreferredProvider,
+            HasOpenAiKey      = !string.IsNullOrEmpty(user.OpenAiApiKey),
+            HasClaudeKey      = !string.IsNullOrEmpty(user.ClaudeApiKey),
+            HasGeminiKey      = !string.IsNullOrEmpty(user.GeminiApiKey),
+            HasSerpApiKey     = !string.IsNullOrEmpty(user.SerpApiKey)
         };
     }
 
@@ -46,11 +45,10 @@ public class UserSettingsService : IUserSettingsService
 
         var updated = provider.ToLowerInvariant() switch
         {
-            "openai"   => user with { OpenAiApiKey     = apiKey },
-            "claude"   => user with { ClaudeApiKey     = apiKey },
-            "gemini"   => user with { GeminiApiKey     = apiKey },
-            "telegram" => user with { TelegramBotToken = apiKey },
-            "serpapi"  => user with { SerpApiKey       = apiKey },
+            "openai"  => user with { OpenAiApiKey = apiKey },
+            "claude"  => user with { ClaudeApiKey = apiKey },
+            "gemini"  => user with { GeminiApiKey = apiKey },
+            "serpapi" => user with { SerpApiKey   = apiKey },
             _ => throw new ArgumentException($"Unknown provider: {provider}")
         };
 

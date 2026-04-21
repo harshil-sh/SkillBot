@@ -1,0 +1,108 @@
+@inject ILocalStorageService LocalStorage
+@inject ISnackbar Snackbar
+
+<MudStack Spacing="4">
+    <MudText Typo="Typo.h6">Account Information</MudText>
+
+    <MudCard Elevation="1">
+        <MudCardContent>
+            <MudStack Spacing="3">
+                <MudTextField Value="@_username"
+                              Label="Username"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Person" />
+                <MudTextField Value="@_email"
+                              Label="Email"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Email" />
+            </MudStack>
+        </MudCardContent>
+    </MudCard>
+
+    <MudDivider />
+
+    <MudText Typo="Typo.h6">Preferences</MudText>
+
+    <MudCard Elevation="1">
+        <MudCardContent>
+            <MudStack Spacing="2">
+                <MudSwitch @bind-Value="_autoSave"
+                           Label="Auto-save conversations"
+                           Color="Color.Primary" />
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="ml-9">
+                    Automatically save all chat sessions to your history.
+                </MudText>
+
+                <MudDivider Light="true" Class="my-2" />
+
+                <MudSwitch @bind-Value="_notifications"
+                           Label="Enable notifications"
+                           Color="Color.Primary" />
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="ml-9">
+                    Receive browser notifications when a long response is ready.
+                </MudText>
+            </MudStack>
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="SavePreferencesAsync"
+                       Disabled="@_saving"
+                       StartIcon="@Icons.Material.Filled.Save">
+                @if (_saving)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                Save Preferences
+            </MudButton>
+        </MudCardActions>
+    </MudCard>
+</MudStack>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState>? AuthStateTask { get; set; }
+
+    private string _username = string.Empty;
+    private string _email = string.Empty;
+    private bool _autoSave = true;
+    private bool _notifications = false;
+    private bool _saving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthStateTask != null)
+        {
+            var state = await AuthStateTask;
+            _username = state.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
+                        ?? state.User.FindFirst("name")?.Value
+                        ?? state.User.FindFirst("unique_name")?.Value
+                        ?? "Unknown";
+            _email = state.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+                     ?? state.User.FindFirst("email")?.Value
+                     ?? string.Empty;
+        }
+
+        _autoSave = await LocalStorage.GetItemAsync<bool?>("pref_autoSave") ?? true;
+        _notifications = await LocalStorage.GetItemAsync<bool?>("pref_notifications") ?? false;
+    }
+
+    private async Task SavePreferencesAsync()
+    {
+        _saving = true;
+        try
+        {
+            await LocalStorage.SetItemAsync("pref_autoSave", _autoSave);
+            await LocalStorage.SetItemAsync("pref_notifications", _notifications);
+            Snackbar.Add("Preferences saved", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving preferences: {ex.Message}", Severity.Error);
+        }
+        finally { _saving = false; }
+    }
+}

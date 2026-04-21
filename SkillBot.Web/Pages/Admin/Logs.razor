@@ -1,0 +1,154 @@
+@page "/admin/logs"
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<AuthorizeView>
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4 flex-wrap">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Article" Color="Color.Primary" />
+                    <MudText Typo="Typo.h4">Log Viewer</MudText>
+                </MudStack>
+                <MudStack Row="true" Spacing="2">
+                    <MudButton Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.Download"
+                               OnClick="@(() => Snackbar.Add("Log download is not yet implemented.", Severity.Info))">
+                        Download Logs
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Error"
+                               StartIcon="@Icons.Material.Filled.DeleteSweep"
+                               OnClick="ConfirmClearLogsAsync">
+                        Clear Old Logs
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.ArrowBack" Href="/admin">
+                        Back
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+
+            <MudAlert Severity="Severity.Info" Class="mb-4">
+                Showing sample log data. Connect to a logging API endpoint to display real logs.
+            </MudAlert>
+
+            @* Filters *@
+            <MudStack Row="true" Spacing="3" Class="mb-4 flex-wrap">
+                <MudTextField @bind-Value="_searchText"
+                              Placeholder="Search messages..."
+                              Variant="Variant.Outlined"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Clearable="true"
+                              Style="min-width: 250px;" />
+                <MudSelect T="string" @bind-Value="_levelFilter"
+                           Label="Level"
+                           Variant="Variant.Outlined"
+                           Style="min-width: 150px;">
+                    <MudSelectItem T="string" Value="@("All")">All</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Info")">Info</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Warning")">Warning</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Error")">Error</MudSelectItem>
+                </MudSelect>
+            </MudStack>
+
+            <MudTable Items="@FilteredLogs"
+                      Dense="true"
+                      Hover="true"
+                      Elevation="2"
+                      RowsPerPage="20">
+                <HeaderContent>
+                    <MudTh>Timestamp</MudTh>
+                    <MudTh>Level</MudTh>
+                    <MudTh>Message</MudTh>
+                </HeaderContent>
+                <RowTemplate Context="log">
+                    <MudTd DataLabel="Timestamp">
+                        <MudText Typo="Typo.caption">@log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Level">
+                        <MudChip T="string" Color="@GetLevelColor(log.Level)" Size="Size.Small">
+                            @log.Level
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Message">
+                        <MudText Typo="Typo.body2"
+                                 Style="@($"color: {GetLevelTextColor(log.Level)}")">
+                            @log.Message
+                        </MudText>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+                <NoRecordsContent>
+                    <MudText Class="pa-4" Align="Align.Center" Color="Color.Secondary">No logs match the current filter.</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private record LogEntry(DateTime Timestamp, string Level, string Message);
+
+    private string _searchText = string.Empty;
+    private string _levelFilter = "All";
+
+    private readonly List<LogEntry> _logs = new()
+    {
+        new(DateTime.UtcNow.AddMinutes(-1), "Info", "Application started successfully"),
+        new(DateTime.UtcNow.AddMinutes(-2), "Info", "User 'alice' logged in"),
+        new(DateTime.UtcNow.AddMinutes(-3), "Info", "Chat request processed in 1.2s"),
+        new(DateTime.UtcNow.AddMinutes(-5), "Warning", "Rate limit approaching for user 'bob' (85/100)"),
+        new(DateTime.UtcNow.AddMinutes(-8), "Info", "Conversation saved to database"),
+        new(DateTime.UtcNow.AddMinutes(-10), "Error", "Failed to connect to OpenAI API: timeout after 30s"),
+        new(DateTime.UtcNow.AddMinutes(-12), "Info", "SerpApi search completed in 0.8s"),
+        new(DateTime.UtcNow.AddMinutes(-15), "Info", "Cache hit for LLM response (key: llm_response_a1b2c3)"),
+        new(DateTime.UtcNow.AddMinutes(-18), "Warning", "Database connection pool reaching capacity (80%)"),
+        new(DateTime.UtcNow.AddMinutes(-20), "Info", "Multi-agent orchestration: task routed to ResearchAgent"),
+        new(DateTime.UtcNow.AddMinutes(-25), "Info", "User 'charlie' registered"),
+        new(DateTime.UtcNow.AddMinutes(-30), "Error", "JWT validation failed: token expired"),
+        new(DateTime.UtcNow.AddMinutes(-35), "Info", "Health check: all systems healthy"),
+        new(DateTime.UtcNow.AddMinutes(-40), "Warning", "Gemini API response latency above threshold (3.2s)"),
+        new(DateTime.UtcNow.AddMinutes(-45), "Info", "Plugin registered: WeatherPlugin"),
+        new(DateTime.UtcNow.AddMinutes(-50), "Info", "Plugin registered: SearchPlugin"),
+        new(DateTime.UtcNow.AddMinutes(-55), "Error", "Claude API key invalid or expired"),
+        new(DateTime.UtcNow.AddHours(-1), "Info", "Hangfire background job completed: CleanupExpiredSessions"),
+        new(DateTime.UtcNow.AddHours(-2), "Info", "Application configuration loaded"),
+        new(DateTime.UtcNow.AddHours(-3), "Warning", "Memory usage at 75% — consider scaling"),
+    };
+
+    private IEnumerable<LogEntry> FilteredLogs => _logs.Where(l =>
+        (_levelFilter == "All" || l.Level == _levelFilter) &&
+        (string.IsNullOrWhiteSpace(_searchText) || l.Message.Contains(_searchText, StringComparison.OrdinalIgnoreCase)));
+
+    private static Color GetLevelColor(string level) => level switch
+    {
+        "Error" => Color.Error,
+        "Warning" => Color.Warning,
+        _ => Color.Default
+    };
+
+    private static string GetLevelTextColor(string level) => level switch
+    {
+        "Error" => "var(--mud-palette-error)",
+        "Warning" => "var(--mud-palette-warning)",
+        _ => "inherit"
+    };
+
+    private async Task ConfirmClearLogsAsync()
+    {
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Clear Old Logs",
+            "This will remove all log entries older than 30 days. This action cannot be undone.",
+            yesText: "Clear Logs",
+            cancelText: "Cancel");
+
+        if (confirmed == true)
+            Snackbar.Add("Clear old logs is not yet implemented.", Severity.Info);
+    }
+}

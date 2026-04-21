@@ -1,0 +1,11 @@
+<MudStack Spacing="2">
+    @for (int i = 0; i < Lines; i++)
+    {
+        var index = i;
+        <MudSkeleton Width="@(index % 3 == 2 ? "60%" : "100%")" Height="20px" />
+    }
+</MudStack>
+
+@code {
+    [Parameter] public int Lines { get; set; } = 3;
+}

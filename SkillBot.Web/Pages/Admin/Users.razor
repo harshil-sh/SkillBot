@@ -1,0 +1,154 @@
+@page "/admin/users"
+@inject ISkillBotApiClient ApiClient
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<AuthorizeView>
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4 flex-wrap">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.ManageAccounts" Color="Color.Primary" />
+                    <MudText Typo="Typo.h4">User Management</MudText>
+                </MudStack>
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.ArrowBack" Href="/admin">
+                    Back to Dashboard
+                </MudButton>
+            </MudStack>
+
+            @if (_accessDenied)
+            {
+                <MudAlert Severity="Severity.Error">Admin access required.</MudAlert>
+            }
+            else
+            {
+                <MudTextField @bind-Value="_searchText"
+                              Placeholder="Search by username or email..."
+                              Variant="Variant.Outlined"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Clearable="true"
+                              Class="mb-4"
+                              FullWidth="true" />
+
+                <MudTable Items="@FilteredUsers"
+                          Dense="true"
+                          Hover="true"
+                          Loading="@_isLoading"
+                          Elevation="2"
+                          RowsPerPage="10">
+                    <HeaderContent>
+                        <MudTh>Username</MudTh>
+                        <MudTh>Email</MudTh>
+                        <MudTh>Registered</MudTh>
+                        <MudTh>Last Active</MudTh>
+                        <MudTh>Status</MudTh>
+                        <MudTh>Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="user">
+                        <MudTd DataLabel="Username">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MudAvatar Color="Color.Primary" Size="Size.Small">
+                                    @user.Username[0].ToString().ToUpper()
+                                </MudAvatar>
+                                <MudText>@user.Username</MudText>
+                            </MudStack>
+                        </MudTd>
+                        <MudTd DataLabel="Email">@user.Email</MudTd>
+                        <MudTd DataLabel="Registered">@user.CreatedAt.ToString("MMM d, yyyy")</MudTd>
+                        <MudTd DataLabel="Last Active">
+                            @(user.LastActive.HasValue ? user.LastActive.Value.ToString("MMM d, yyyy") : "Never")
+                        </MudTd>
+                        <MudTd DataLabel="Status">
+                            <MudChip T="string"
+                                     Color="@(user.IsActive ? Color.Success : Color.Default)"
+                                     Size="Size.Small">
+                                @(user.IsActive ? "Active" : "Inactive")
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Actions">
+                            <MudTooltip Text="Delete user">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Color="Color.Error"
+                                               Size="Size.Small"
+                                               OnClick="@(() => ConfirmDeleteAsync(user))" />
+                            </MudTooltip>
+                        </MudTd>
+                    </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager />
+                    </PagerContent>
+                    <NoRecordsContent>
+                        <MudText Class="pa-4" Align="Align.Center" Color="Color.Secondary">No users found.</MudText>
+                    </NoRecordsContent>
+                    <LoadingContent>
+                        <MudText Class="pa-4" Align="Align.Center" Color="Color.Secondary">Loading users...</MudText>
+                    </LoadingContent>
+                </MudTable>
+            }
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private List<AdminUserResponse> _users = new();
+    private string _searchText = string.Empty;
+    private bool _isLoading = true;
+    private bool _accessDenied;
+
+    private IEnumerable<AdminUserResponse> FilteredUsers => string.IsNullOrWhiteSpace(_searchText)
+        ? _users
+        : _users.Where(u =>
+            u.Username.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ||
+            u.Email.Contains(_searchText, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _users = await ApiClient.GetAdminUsersAsync();
+        }
+        catch (HttpRequestException ex) when ((int?)ex.StatusCode is 403 or 401)
+        {
+            _accessDenied = true;
+        }
+        catch
+        {
+            // Show placeholder data if endpoint not available
+            _users = new List<AdminUserResponse>
+            {
+                new("1", "alice", "alice@example.com", DateTime.UtcNow.AddDays(-30), DateTime.UtcNow.AddHours(-2), true),
+                new("2", "bob", "bob@example.com", DateTime.UtcNow.AddDays(-15), DateTime.UtcNow.AddDays(-1), true),
+                new("3", "charlie", "charlie@example.com", DateTime.UtcNow.AddDays(-7), null, false),
+            };
+            Snackbar.Add("Showing placeholder data — admin endpoint unavailable.", Severity.Warning);
+        }
+        finally { _isLoading = false; }
+    }
+
+    private async Task ConfirmDeleteAsync(AdminUserResponse user)
+    {
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Delete User",
+            $"Are you sure you want to delete user \"{user.Username}\"? This action cannot be undone.",
+            yesText: "Delete",
+            cancelText: "Cancel");
+
+        if (confirmed == true)
+        {
+            try
+            {
+                await ApiClient.DeleteAdminUserAsync(user.Id);
+                _users.Remove(user);
+                Snackbar.Add($"User \"{user.Username}\" deleted.", Severity.Success);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error deleting user: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+}

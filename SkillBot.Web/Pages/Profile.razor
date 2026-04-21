@@ -1,0 +1,62 @@
+@page "/profile"
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthStateProvider
+
+<AuthorizeView>
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Small" Class="mt-6">
+            <MudText Typo="Typo.h5" Class="mb-4">My Profile</MudText>
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudStack AlignItems="AlignItems.Center" Class="mb-4">
+                        <MudAvatar Color="Color.Primary" Size="Size.Large" Style="width:80px;height:80px;font-size:2rem;">
+                            @_initials
+                        </MudAvatar>
+                        <MudText Typo="Typo.h6">@_username</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@_email</MudText>
+                    </MudStack>
+                    <MudDivider Class="mb-4" />
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudTextField Value="@_username"
+                                          Label="Username"
+                                          Variant="Variant.Outlined"
+                                          ReadOnly="true"
+                                          AdornmentIcon="@Icons.Material.Filled.Person"
+                                          Adornment="Adornment.Start" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField Value="@_email"
+                                          Label="Email"
+                                          Variant="Variant.Outlined"
+                                          ReadOnly="true"
+                                          AdornmentIcon="@Icons.Material.Filled.Email"
+                                          Adornment="Adornment.Start" />
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private string _username = string.Empty;
+    private string _email = string.Empty;
+    private string _initials = "?";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        _username = user.FindFirst(ClaimTypes.Name)?.Value
+                 ?? user.FindFirst("unique_name")?.Value
+                 ?? user.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                 ?? "User";
+        _email = user.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty;
+        _initials = _username.Length > 0 ? _username[0].ToString().ToUpper() : "?";
+    }
+}

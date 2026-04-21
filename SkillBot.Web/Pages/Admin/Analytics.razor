@@ -1,0 +1,160 @@
+@page "/admin/analytics"
+@inject ISkillBotApiClient ApiClient
+
+<AuthorizeView>
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4 flex-wrap">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.BarChart" Color="Color.Primary" />
+                    <MudText Typo="Typo.h4">Usage Analytics</MudText>
+                </MudStack>
+                <MudStack Row="true" Spacing="2">
+                    <MudButton Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.Download"
+                               OnClick="@(() => { })">
+                        Export CSV
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.ArrowBack" Href="/admin">
+                        Back
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+
+            <MudAlert Severity="Severity.Info" Class="mb-4">
+                Real-time data will be populated from the API. Currently showing sample weekly data.
+            </MudAlert>
+
+            @* Summary Cards *@
+            <MudGrid Spacing="3" Class="mb-6">
+                <MudItem xs="12" sm="4">
+                    <MudCard Elevation="2">
+                        <MudCardContent>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Total Requests (This Week)</MudText>
+                            <MudText Typo="Typo.h4"><b>@_totalRequests.ToString("N0")</b></MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Success">
+                                <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" /> +12% vs last week
+                            </MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+                <MudItem xs="12" sm="4">
+                    <MudCard Elevation="2">
+                        <MudCardContent>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Total Tokens (This Week)</MudText>
+                            <MudText Typo="Typo.h4"><b>@FormatNumber(_totalTokens)</b></MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Warning">
+                                <MudIcon Icon="@Icons.Material.Filled.TrendingFlat" Size="Size.Small" /> +3% vs last week
+                            </MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+                <MudItem xs="12" sm="4">
+                    <MudCard Elevation="2">
+                        <MudCardContent>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">Active Users (This Week)</MudText>
+                            <MudText Typo="Typo.h4"><b>@_activeUsers</b></MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Success">
+                                <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" /> +5% vs last week
+                            </MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+
+            @* Date Range *@
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-3">
+                <MudIcon Icon="@Icons.Material.Filled.DateRange" Color="Color.Secondary" Size="Size.Small" />
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    @_weekStart.ToString("MMM d") – @_weekEnd.ToString("MMM d, yyyy")
+                </MudText>
+            </MudStack>
+
+            @* Charts *@
+            <MudGrid Spacing="3">
+                <MudItem xs="12">
+                    <MudCard Elevation="2">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.subtitle1">Daily Requests</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudChart T="double"
+                                      ChartType="ChartType.Bar"
+                                      ChartSeries="@_requestSeries"
+                                      ChartLabels="@_dayLabels"
+                                      Width="100%"
+                                      Height="300px" />
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudCard Elevation="2">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.subtitle1">Daily Token Usage</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudChart T="double"
+                                      ChartType="ChartType.Line"
+                                      ChartSeries="@_tokenSeries"
+                                      ChartLabels="@_dayLabels"
+                                      Width="100%"
+                                      Height="300px" />
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private readonly DateTime _weekStart = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek);
+    private DateTime _weekEnd => _weekStart.AddDays(6);
+
+    private int _totalRequests = 1_247;
+    private long _totalTokens = 3_820_500;
+    private int _activeUsers = 34;
+
+    private List<ChartSeries<double>> _requestSeries = new();
+    private List<ChartSeries<double>> _tokenSeries = new();
+    private string[] _dayLabels = Array.Empty<string>();
+
+    protected override void OnInitialized()
+    {
+        _dayLabels = Enumerable.Range(0, 7)
+            .Select(i => _weekStart.AddDays(i).ToString("ddd"))
+            .ToArray();
+
+        _requestSeries = new List<ChartSeries<double>>
+        {
+            new ChartSeries<double>
+            {
+                Name = "Requests",
+                Data = new double[] { 142, 198, 215, 187, 220, 165, 120 }
+            }
+        };
+
+        _tokenSeries = new List<ChartSeries<double>>
+        {
+            new ChartSeries<double>
+            {
+                Name = "Tokens (k)",
+                Data = new double[] { 420, 610, 680, 540, 720, 500, 350 }
+            }
+        };
+    }
+
+    private static string FormatNumber(long n) => n >= 1_000_000 ? $"{n / 1_000_000.0:F1}M"
+        : n >= 1_000 ? $"{n / 1_000.0:F1}K"
+        : n.ToString();
+}

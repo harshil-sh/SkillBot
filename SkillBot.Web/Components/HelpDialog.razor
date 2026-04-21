@@ -1,0 +1,27 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">⌨️ Keyboard Shortcuts &amp; Help</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.subtitle2" Class="mb-2">Global</MudText>
+        <MudList T="string" Dense="true">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Keyboard">Ctrl+K — Focus search</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Keyboard">Ctrl+N — New conversation</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Keyboard">Esc — Close dialogs</MudListItem>
+        </MudList>
+        <MudText Typo="Typo.subtitle2" Class="mb-2 mt-3">Chat</MudText>
+        <MudList T="string" Dense="true">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Keyboard">Enter — Send message</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Keyboard">Shift+Enter — New line</MudListItem>
+        </MudList>
+        <MudDivider Class="my-3" />
+        <MudText Typo="Typo.body2">SkillBot v1.0.0 — AI assistant supporting OpenAI, Claude, and Gemini</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => MudDialog.Close())">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+}

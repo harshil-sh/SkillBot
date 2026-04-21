@@ -1,0 +1,138 @@
+@inject ThemeService ThemeService
+@inject ILocalStorageService LocalStorage
+@inject ISnackbar Snackbar
+
+<MudStack Spacing="4">
+    <MudText Typo="Typo.h6">Theme</MudText>
+
+    <MudCard Elevation="1">
+        <MudCardContent>
+            <MudRadioGroup T="string" @bind-Value="_themeMode">
+                <MudStack Spacing="1">
+                    <MudRadio T="string" Value="@("light")" Color="Color.Primary">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.LightMode" />
+                            <MudText>Light</MudText>
+                        </MudStack>
+                    </MudRadio>
+                    <MudRadio T="string" Value="@("dark")" Color="Color.Primary">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.DarkMode" />
+                            <MudText>Dark</MudText>
+                        </MudStack>
+                    </MudRadio>
+                    <MudRadio T="string" Value="@("system")" Color="Color.Primary">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.SettingsBrightness" />
+                            <MudText>System default</MudText>
+                        </MudStack>
+                    </MudRadio>
+                </MudStack>
+            </MudRadioGroup>
+        </MudCardContent>
+    </MudCard>
+
+    <MudDivider />
+
+    <MudText Typo="Typo.h6">Display</MudText>
+
+    <MudCard Elevation="1">
+        <MudCardContent>
+            <MudStack Spacing="3">
+                <MudSelect T="string" @bind-Value="_fontSize"
+                           Label="Font Size"
+                           Variant="Variant.Outlined">
+                    <MudSelectItem T="string" Value="@("small")">Small</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("medium")">Medium (Default)</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("large")">Large</MudSelectItem>
+                </MudSelect>
+
+                <MudDivider Light="true" />
+
+                <MudSwitch @bind-Value="_compactMode" Label="Compact mode" Color="Color.Primary" />
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="ml-9">
+                    Reduce spacing between messages and UI elements.
+                </MudText>
+
+                <MudDivider Light="true" />
+
+                <MudSwitch @bind-Value="_showTimestamps" Label="Show message timestamps" Color="Color.Primary" />
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="ml-9">
+                    Display the time each message was sent.
+                </MudText>
+            </MudStack>
+        </MudCardContent>
+    </MudCard>
+
+    <MudDivider />
+
+    <MudText Typo="Typo.h6">Preview</MudText>
+
+    <MudCard Elevation="1" Style="max-width: 480px;">
+        <MudCardContent>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">Sample message</MudText>
+            <MudPaper Elevation="0" Class="@($"pa-3 rounded mud-theme-{(_themeMode == "dark" ? "dark" : "light")}")"
+                      Style="background: var(--mud-palette-primary); color: white;">
+                <MudText Typo="@(_fontSize == "large" ? Typo.body1 : _fontSize == "small" ? Typo.caption : Typo.body2)">
+                    Hello! How can I help you today?
+                </MudText>
+                @if (_showTimestamps)
+                {
+                    <MudText Typo="Typo.caption" Style="opacity: 0.7; margin-top: 4px;">
+                        @DateTime.Now.ToString("HH:mm")
+                    </MudText>
+                }
+            </MudPaper>
+        </MudCardContent>
+    </MudCard>
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+               OnClick="ApplyAsync"
+               Disabled="@_applying"
+               StartIcon="@Icons.Material.Filled.Check">
+        @if (_applying)
+        {
+            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+        }
+        Apply
+    </MudButton>
+</MudStack>
+
+@code {
+    private string _themeMode = "light";
+    private string _fontSize = "medium";
+    private bool _compactMode;
+    private bool _showTimestamps = true;
+    private bool _applying;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _themeMode = await LocalStorage.GetItemAsync<string?>("pref_themeMode") ?? (ThemeService.IsDarkMode ? "dark" : "light");
+        _fontSize = await LocalStorage.GetItemAsync<string?>("pref_fontSize") ?? "medium";
+        _compactMode = await LocalStorage.GetItemAsync<bool?>("pref_compactMode") ?? false;
+        _showTimestamps = await LocalStorage.GetItemAsync<bool?>("pref_showTimestamps") ?? true;
+    }
+
+    private async Task ApplyAsync()
+    {
+        _applying = true;
+        try
+        {
+            // Sync dark mode with ThemeService
+            var wantDark = _themeMode == "dark";
+            if (ThemeService.IsDarkMode != wantDark)
+                await ThemeService.ToggleDarkModeAsync();
+
+            await LocalStorage.SetItemAsync("pref_themeMode", _themeMode);
+            await LocalStorage.SetItemAsync("pref_fontSize", _fontSize);
+            await LocalStorage.SetItemAsync("pref_compactMode", _compactMode);
+            await LocalStorage.SetItemAsync("pref_showTimestamps", _showTimestamps);
+            Snackbar.Add("Appearance settings applied", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally { _applying = false; }
+    }
+}

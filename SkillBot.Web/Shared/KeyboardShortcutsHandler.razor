@@ -1,0 +1,38 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+@code {
+    [Parameter] public EventCallback OnFocusSearch { get; set; }
+    [Parameter] public EventCallback OnNewConversation { get; set; }
+    [Parameter] public EventCallback OnCloseDialogs { get; set; }
+
+    private DotNetObjectReference<KeyboardShortcutsHandler>? _dotNetRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            try
+            {
+                await JS.InvokeVoidAsync("skillbotInterop.registerKeyboardShortcuts", _dotNetRef);
+            }
+            catch { /* JS interop may not be available in pre-render */ }
+        }
+    }
+
+    [JSInvokable("FocusSearch")]
+    public async Task FocusSearch() => await OnFocusSearch.InvokeAsync();
+
+    [JSInvokable("NewConversation")]
+    public async Task NewConversation() => await OnNewConversation.InvokeAsync();
+
+    [JSInvokable("CloseDialogs")]
+    public async Task CloseDialogs() => await OnCloseDialogs.InvokeAsync();
+
+    public async ValueTask DisposeAsync()
+    {
+        _dotNetRef?.Dispose();
+        await ValueTask.CompletedTask;
+    }
+}

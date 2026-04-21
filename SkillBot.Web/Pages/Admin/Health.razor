@@ -1,0 +1,210 @@
+@page "/admin/health"
+@implements IDisposable
+@inject ISkillBotApiClient ApiClient
+
+<AuthorizeView>
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4 flex-wrap">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.HealthAndSafety" Color="Color.Primary" />
+                    <MudText Typo="Typo.h4">System Health</MudText>
+                </MudStack>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    @if (_lastChecked.HasValue)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            Last checked: @_lastChecked.Value.ToString("HH:mm:ss")
+                        </MudText>
+                    }
+                    <MudButton Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.Refresh"
+                               OnClick="@CheckHealthAsync"
+                               Disabled="@_checking">
+                        Refresh
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.ArrowBack" Href="/admin">
+                        Back
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+
+            @if (_unreachable)
+            {
+                <MudAlert Severity="Severity.Error"
+                          Icon="@Icons.Material.Filled.WifiOff"
+                          ContentAlignment="HorizontalAlignment.Left">
+                    <MudText><b>Cannot connect to API</b></MudText>
+                    <MudText Typo="Typo.body2">The API server appears to be unreachable. Check that the server is running.</MudText>
+                    <MudButton Size="Size.Small" Color="Color.Error" Variant="Variant.Outlined"
+                               OnClick="@CheckHealthAsync" Class="mt-2">
+                        Retry
+                    </MudButton>
+                </MudAlert>
+            }
+            else if (_checking && _health == null)
+            {
+                <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+            }
+            else
+            {
+                @* Overall Status *@
+                <MudCard Elevation="2" Class="mb-4">
+                    <MudCardContent>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                            <MudIcon Icon="@OverallIcon"
+                                     Color="@OverallColor"
+                                     Style="font-size: 3rem;" />
+                            <div>
+                                <MudText Typo="Typo.h5">
+                                    Overall: <span style="color: var(--mud-palette-@OverallColorName);">@(_health?.Status ?? "Unknown")</span>
+                                </MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    Auto-refreshes every 30 seconds
+                                </MudText>
+                            </div>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+
+                @* Individual Health Components *@
+                <MudText Typo="Typo.h6" Class="mb-3">Health Indicators</MudText>
+                <MudGrid Spacing="3">
+                    @foreach (var indicator in _indicators)
+                    {
+                        <MudItem xs="12" sm="4">
+                            <MudCard Elevation="1">
+                                <MudCardContent>
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudIcon Icon="@GetIndicatorIcon(indicator.Status)"
+                                                 Color="@GetIndicatorColor(indicator.Status)" />
+                                        <div>
+                                            <MudText Typo="Typo.subtitle2">@indicator.Name</MudText>
+                                            <MudChip T="string"
+                                                     Color="@GetIndicatorColor(indicator.Status)"
+                                                     Size="Size.Small">
+                                                @indicator.Status
+                                            </MudChip>
+                                        </div>
+                                    </MudStack>
+                                    @if (!string.IsNullOrEmpty(indicator.Description))
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">
+                                            @indicator.Description
+                                        </MudText>
+                                    }
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private HealthCheckResponse? _health;
+    private bool _checking;
+    private bool _unreachable;
+    private DateTime? _lastChecked;
+    private List<HealthIndicator> _indicators = new();
+    private Timer? _timer;
+
+    private record HealthIndicator(string Name, string Status, string? Description = null);
+
+    private Color OverallColor => _health?.Status?.ToLower() switch
+    {
+        "healthy" => Color.Success,
+        "degraded" => Color.Warning,
+        _ => Color.Error
+    };
+
+    private string OverallColorName => _health?.Status?.ToLower() switch
+    {
+        "healthy" => "success",
+        "degraded" => "warning",
+        _ => "error"
+    };
+
+    private string OverallIcon => _health?.Status?.ToLower() switch
+    {
+        "healthy" => Icons.Material.Filled.CheckCircle,
+        "degraded" => Icons.Material.Filled.Warning,
+        _ => Icons.Material.Filled.Cancel
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckHealthAsync();
+        _timer = new Timer(async _ =>
+        {
+            await CheckHealthAsync();
+            await InvokeAsync(StateHasChanged);
+        }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+    }
+
+    private async Task CheckHealthAsync()
+    {
+        _checking = true;
+        _unreachable = false;
+        try
+        {
+            _health = await ApiClient.GetHealthAsync();
+            if (_health == null)
+            {
+                _unreachable = true;
+            }
+            else
+            {
+                _lastChecked = DateTime.Now;
+                BuildIndicators();
+            }
+        }
+        catch
+        {
+            _unreachable = true;
+        }
+        finally { _checking = false; }
+    }
+
+    private void BuildIndicators()
+    {
+        _indicators.Clear();
+        if (_health?.Entries != null && _health.Entries.Count > 0)
+        {
+            foreach (var (key, entry) in _health.Entries)
+                _indicators.Add(new HealthIndicator(FormatName(key), entry.Status, entry.Description));
+        }
+        else
+        {
+            // Default indicators based on overall status
+            var status = _health?.Status ?? "Unknown";
+            _indicators.Add(new HealthIndicator("API", status));
+            _indicators.Add(new HealthIndicator("Database", status));
+            _indicators.Add(new HealthIndicator("Cache", status));
+        }
+    }
+
+    private static string FormatName(string key) =>
+        char.ToUpper(key[0]) + key[1..].Replace("_", " ").Replace("-", " ");
+
+    private static Color GetIndicatorColor(string status) => status.ToLower() switch
+    {
+        "healthy" => Color.Success,
+        "degraded" => Color.Warning,
+        _ => Color.Error
+    };
+
+    private static string GetIndicatorIcon(string status) => status.ToLower() switch
+    {
+        "healthy" => Icons.Material.Filled.CheckCircle,
+        "degraded" => Icons.Material.Filled.Warning,
+        _ => Icons.Material.Filled.Cancel
+    };
+
+    public void Dispose() => _timer?.Dispose();
+}

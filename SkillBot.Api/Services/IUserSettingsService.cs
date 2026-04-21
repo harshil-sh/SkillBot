@@ -1,10 +1,7 @@
 using SkillBot.Api.Models.Settings;
+using SkillBot.Core.Services;
 
 namespace SkillBot.Api.Services;
 
-public interface IUserSettingsService
-{
-    Task<UserSettingsResponse> GetSettingsAsync(string userId);
-    Task UpdateApiKeyAsync(string userId, string provider, string apiKey);
-    Task UpdateProviderAsync(string userId, string provider);
-}
+// Marker re-export so existing Api code keeps compiling against the Core interface.
+// Api-specific settings response is still available through UserSettingsResponse.

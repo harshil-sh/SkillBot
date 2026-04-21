@@ -1,371 +1,324 @@
-# SkillBot - AI Agentic Runtime
+# 🤖 SkillBot — Self-Hosted AI Assistant
 
-## Project Overview
+![Build](https://img.shields.io/badge/build-passing-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-blue)
+![.NET](https://img.shields.io/badge/.NET-10.0-purple)
+![C#](https://img.shields.io/badge/C%23-12-blue)
 
-**SkillBot** is a production-ready AI agent framework built with C# and .NET 10. It provides a clean, extensible architecture for building intelligent agents that can use tools, maintain conversation history, and coordinate multiple specialized agents to solve complex tasks.
+**SkillBot** is a production-ready, self-hosted AI assistant built with .NET 10 and Microsoft Semantic Kernel. It supports multiple LLM providers (OpenAI, Claude, Gemini), a Telegram bot interface, a REST API, a console client, multi-agent orchestration, and a plugin system — all in one deployable package.
 
-### Key Capabilities
+---
 
-- ✅ **Single-Agent Mode**: Traditional AI assistant with plugin-based tool usage
-- ✅ **Multi-Agent Orchestration**: Multiple specialized AI agents working together
-- ✅ **Plugin System**: Dynamic tool registration with reflection-based discovery
-- ✅ **Persistent Memory**: SQLite-based conversation history (optional in-memory mode)
-- ✅ **Semantic Kernel Integration**: Leverages Microsoft's SK for LLM orchestration
-- ✅ **Dependency Injection**: Full DI support throughout the application
-- ✅ **Modern C#**: Records, nullable reference types, async/await patterns
+## ✨ Features
 
-### Technology Stack
+- 🧠 **Multi-LLM Support** — OpenAI (GPT-4), Anthropic Claude, and Google Gemini; switch per-user at runtime
+- 🤖 **Multi-Agent Orchestration** — Route complex tasks to specialised agents (Research, Coding, Data Analysis, Writing)
+- 📱 **Telegram Bot** — Full-featured bot with slash commands, per-user keys, and provider switching
+- 🌐 **REST API** — ASP.NET Core with JWT authentication, rate limiting, and Swagger UI
+- 💻 **Console Client** — Interactive terminal interface for local use
+- 🔌 **Plugin System** — Reflection-based discovery with `[Plugin]`, `[KernelFunction]`, `[Description]` attributes
+- 🔍 **Web Search** — SerpAPI integration with caching
+- ⚡ **Two-Tier Caching** — In-memory (L1) + SQLite (L2) cache for LLM responses and search results
+- 🛡️ **Security** — JWT auth, rate limiting, input validation, content safety checks
+- ⏰ **Background Tasks** — Hangfire-powered one-time and recurring task scheduling
+- 📊 **Token Tracking** — Per-conversation usage statistics
+- 💾 **SQLite Persistence** — Conversation history and user settings
+- 📝 **Structured Logging** — Serilog with rolling file and console sinks
+- 🖥️ **Web UI** — Blazor WebAssembly SPA with MudBlazor, dark mode, chat, settings, and admin dashboard
 
-| Component | Technology | Version |
-|-----------|-----------|---------|
-| Runtime | .NET | 10.0 |
-| Language | C# | 12+ |
-| LLM Framework | Microsoft Semantic Kernel | Latest |
-| Database | SQLite (optional) | - |
-| DI Container | Microsoft.Extensions.DependencyInjection | 8.0+ |
-| Configuration | Microsoft.Extensions.Configuration | 8.0+ |
-| Logging | Microsoft.Extensions.Logging | 8.0+ |
+---
 
-### Architecture Style
+## 🖥️ Web Interface
 
-- **Layered Architecture** (Core → Infrastructure → Plugins → Console)
-- **Clean Architecture** principles
-- **SOLID** design patterns
-- **Dependency Inversion** throughout
+SkillBot includes a modern **Blazor WebAssembly** single-page application that provides a full-featured browser-based UI without requiring any server-side rendering.
 
-### Project Status
+### Web UI Features
 
-- ✅ Core agent engine: **Complete**
-- ✅ Plugin system: **Complete**
-- ✅ Multi-agent orchestration: **Complete**
-- ✅ SQLite persistence: **Complete**
-- ⚠️ REST API: **Not implemented**
-- ⚠️ Web UI: **Not implemented**
-- ⚠️ RAG/Vector DB: **Not implemented**
+- 💬 **Chat Interface** — Conversational AI with markdown rendering and conversation history
+- 🤖 **Multi-Agent Mode** — Toggle between single-agent and multi-agent orchestration in one click
+- ⚙️ **Settings Dashboard** — Configure API keys, preferred LLM provider, and appearance
+- 🎨 **Dark / Light Mode** — Theme persisted in `localStorage`, no flash on reload
+- 👤 **Account Management** — Profile, password change, and account deletion
+- 🛡️ **Admin Dashboard** — User management, usage analytics, and system monitoring
+- 📱 **Responsive** — Works on desktop, tablet, and mobile browsers
 
-### Quick Links
+### Access URLs
 
-- [Architecture Guide](./ARCHITECTURE.md)
-- [API Reference](./API-REFERENCE.md)
-- [Plugin Development Guide](./PLUGIN-DEVELOPMENT.md)
-- [Multi-Agent Guide](./MULTI-AGENT-GUIDE.md)
-- [Deployment Guide](./DEPLOYMENT.md)
+| Service | Development URL |
+|---------|----------------|
+| SkillBot API | `https://localhost:7101` |
+| Web UI | `http://localhost:5000` |
+| Swagger UI | `https://localhost:7101/swagger` |
 
-## Getting Started
+### Quick Start (Web UI)
+
+```bash
+# Run the API first
+dotnet run --project SkillBot.Api/SkillBot.Api.csproj
+
+# In a second terminal, run the web UI
+dotnet run --project SkillBot.Web/SkillBot.Web.csproj
+
+# Open http://localhost:5000 in your browser
+```
+
+See **[docs/frontend/DEVELOPMENT.md](docs/frontend/DEVELOPMENT.md)** for full setup instructions and **[docs/USER_GUIDE_WEB.md](docs/USER_GUIDE_WEB.md)** for usage instructions.
+
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
-```bash
-# Required
-.NET 10 SDK
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- An API key for at least one LLM provider (OpenAI / Claude / Gemini)
 
-# Optional
-SQLite Browser (for database inspection)
-Visual Studio 2022 / VS Code / Rider
-```
-
-### Installation
+### Manual Setup
 
 ```bash
-# Clone the repository
-git clone <repository-url>
+# 1. Clone the repository
+git clone https://github.com/harshil-sh/SkillBot.git
 cd SkillBot
 
-# Restore packages
-dotnet restore
+# 2. Restore packages
+dotnet restore SkillBot.slnx
 
-# Configure API key
-cd SkillBot.Console
-dotnet user-secrets set "SkillBot:ApiKey" "your-openai-api-key"
+# 3. Set your API key (development)
+cd SkillBot.Api
+dotnet user-secrets set "SkillBot:ApiKey" "sk-your-openai-key"
+dotnet user-secrets set "JwtSettings:Secret" "your-super-secret-key-min-32-chars-long"
 
-# Build
-dotnet build
-
-# Run (single-agent mode)
-dotnet run
-
-# Run (multi-agent mode)
-dotnet run -- --multi-agent
+# 4. Build and run the API
+dotnet run --project SkillBot.Api/SkillBot.Api.csproj
+# API: https://localhost:7101  |  Swagger: https://localhost:7101/
 ```
 
-### Basic Usage
+### Console Client
 
 ```bash
-# Single agent mode
-dotnet run
-
-You: What's 25 * 17?
-Assistant: 25 multiplied by 17 equals 425.
+# Single-agent mode
+dotnet run --project SkillBot.Console/SkillBot.Console.csproj
 
 # Multi-agent mode
-dotnet run -- --multi-agent
-
-You: Research Python vs JavaScript and write a comparison
-🤖 Coordinating specialists...
-[Multiple agents collaborate to answer]
+dotnet run --project SkillBot.Console/SkillBot.Console.csproj -- --multi-agent
 ```
 
-## Project Structure
+### Docker (Coming Soon)
 
-```
-SkillBot/
-├── SkillBot.Core/                 # Pure domain layer (no dependencies)
-│   ├── Interfaces/                # Core contracts
-│   │   ├── IAgentEngine.cs
-│   │   ├── IPluginProvider.cs
-│   │   ├── IMemoryProvider.cs
-│   │   ├── IExecutionContext.cs
-│   │   ├── IAgentOrchestrator.cs
-│   │   ├── ISpecializedAgent.cs
-│   │   └── ITaskRouter.cs
-│   ├── Models/                    # Domain models (records)
-│   │   ├── AgentMessage.cs
-│   │   ├── AgentResponse.cs
-│   │   ├── ToolCall.cs
-│   │   ├── PluginMetadata.cs
-│   │   ├── AgentTask.cs
-│   │   └── OrchestratedResponse.cs
-│   └── Exceptions/                # Custom exceptions
-│       ├── AgentException.cs
-│       ├── PluginException.cs
-│       └── MemoryException.cs
-│
-├── SkillBot.Infrastructure/       # Implementation layer
-│   ├── Engine/
-│   │   └── SemanticKernelEngine.cs
-│   ├── Memory/
-│   │   ├── InMemoryProvider.cs
-│   │   └── SqliteMemoryProvider.cs
-│   ├── Plugins/
-│   │   └── DynamicPluginProvider.cs
-│   ├── MultiAgent/
-│   │   ├── AgentOrchestrator.cs
-│   │   ├── LlmTaskRouter.cs
-│   │   └── Agents/
-│   │       ├── BaseSpecializedAgent.cs
-│   │       ├── ResearchAgent.cs
-│   │       ├── CodingAgent.cs
-│   │       ├── DataAnalysisAgent.cs
-│   │       └── WritingAgent.cs
-│   └── Configuration/
-│       ├── SkillBotOptions.cs
-│       └── ServiceCollectionExtensions.cs
-│
-├── SkillBot.Plugins/              # Plugin implementations
-│   ├── Examples/
-│   │   ├── CalculatorPlugin.cs
-│   │   ├── WeatherPlugin.cs
-│   │   └── TimePlugin.cs
-│   └── OpenAI/
-│       └── SimpleUsagePlugin.cs
-│
-├── SkillBot.Console/              # Console host application
-│   ├── Program.cs
-│   └── appsettings.json
-│
-└── docs/                          # Documentation
-    ├── README.md
-    ├── ARCHITECTURE.md
-    ├── API-REFERENCE.md
-    ├── PLUGIN-DEVELOPMENT.md
-    └── MULTI-AGENT-GUIDE.md
+```bash
+docker compose up
 ```
 
-## Configuration
+---
 
-### appsettings.json
+## 🏗️ Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Clients                                                  │
+│  ┌─────────────┐  ┌──────────────┐  ┌─────────────────┐ │
+│  │  Telegram   │  │  REST API    │  │  Console Client │ │
+│  │    Bot      │  │  (JWT Auth)  │  │                 │ │
+│  └──────┬──────┘  └──────┬───────┘  └────────┬────────┘ │
+└─────────┼────────────────┼───────────────────┼──────────┘
+          │                │                   │
+          ▼                ▼                   ▼
+┌─────────────────────────────────────────────────────────┐
+│  SkillBot.Api  (ASP.NET Core)                            │
+│  Controllers · JWT · Rate Limiting · Content Safety      │
+│  Hangfire · EF Core SQLite · Serilog                     │
+└────────────────────────┬────────────────────────────────┘
+                         │
+          ┌──────────────▼──────────────┐
+          │  SkillBot.Infrastructure     │
+          │  SemanticKernelEngine        │
+          │  Multi-Agent Orchestrator    │
+          │  LLM Providers (OAI/Claude/  │
+          │    Gemini)                   │
+          │  Two-Tier Cache              │
+          └──────────────┬──────────────┘
+                         │
+          ┌──────────────▼──────────────┐
+          │  SkillBot.Core               │
+          │  Interfaces · Models         │
+          │  Domain Contracts            │
+          └─────────────────────────────┘
+```
+
+Projects:
+
+| Project | Role |
+|---|---|
+| `SkillBot.Core` | Interfaces, domain models, no external dependencies |
+| `SkillBot.Infrastructure` | Semantic Kernel, agents, cache, LLM providers, channels |
+| `SkillBot.Api` | ASP.NET Core host, JWT auth, EF Core, Hangfire |
+| `SkillBot.Console` | Interactive terminal client that calls the API |
+| `SkillBot.Plugins` | Calculator, Weather, Time, SerpAPI search plugins |
+| `SkillBot.Web` | Blazor WebAssembly SPA with MudBlazor 9.x |
+
+---
+
+## ⚙️ Configuration
+
+Edit `SkillBot.Api/appsettings.json` (or use environment variables / `dotnet user-secrets`):
 
 ```json
 {
-  "SkillBot": {
-    "ApiKey": "your-openai-api-key-here",
-    "Model": "gpt-4",
-    "AzureEndpoint": null,
-    "AzureDeploymentName": null,
-    "MaxHistoryMessages": 100,
-    "VerboseLogging": false,
-    "PluginAssemblyPaths": [],
-    "MemoryProvider": "SQLite",
-    "SqliteDatabasePath": "skillbot.db"
+  "ConnectionStrings": {
+    "SkillBot": "Data Source=skillbot.db"
   },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft": "Warning"
+  "JwtSettings": {
+    "Secret": "your-super-secret-key-min-32-chars-long",
+    "Issuer": "SkillBot",
+    "Audience": "SkillBotUsers",
+    "ExpirationMinutes": 1440
+  },
+  "SkillBot": {
+    "ApiKey": "your-openai-api-key",
+    "Model": "gpt-4",
+    "Caching": { "Enabled": true }
+  },
+  "SerpApi": {
+    "ApiKey": "your-serpapi-key"
+  },
+  "Channels": {
+    "Telegram": {
+      "Enabled": false,
+      "BotToken": "",
+      "WebhookUrl": "https://yourdomain.com/api/webhook/telegram"
     }
   }
 }
 ```
 
-### Environment Variables
+See **[docs/CONFIGURATION.md](docs/CONFIGURATION.md)** for all options.
+
+---
+
+## 📡 API Usage Examples
 
 ```bash
-# OpenAI Configuration
-export SkillBot__ApiKey="sk-..."
-export SkillBot__Model="gpt-4"
+BASE=https://localhost:7101
 
-# Memory Configuration
-export SkillBot__MemoryProvider="SQLite"
-export SkillBot__SqliteDatabasePath="/data/skillbot.db"
+# Register a user
+curl -k -X POST $BASE/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","username":"alice","password":"Secret123!"}'
+
+# Login and get JWT token
+TOKEN=$(curl -k -s -X POST $BASE/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"Secret123!"}' | jq -r .token)
+
+# Send a chat message
+curl -k -X POST $BASE/api/chat \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"message":"What is 42 * 37?"}'
+
+# Multi-agent task
+curl -k -X POST $BASE/api/multi-agent/chat \
+  -H "Content-Type: application/json" \
+  -d '{"task":"Research quantum computing and write a summary"}'
+
+# List available plugins
+curl -k $BASE/api/plugins
 ```
 
-## Core Concepts
+See **[docs/API.md](docs/API.md)** for full endpoint reference.
 
-### 1. Agent Engine
+---
 
-The `IAgentEngine` is the core orchestration layer that:
-- Manages conversation loop with LLM
-- Handles tool/plugin invocation
-- Maintains execution context
-- Supports streaming responses
+## 📱 Telegram Bot
 
-### 2. Plugins (Tools)
+1. Create a bot with [@BotFather](https://t.me/BotFather) and copy the token
+2. Set `Channels:Telegram:BotToken` and `Channels:Telegram:Enabled: true`
+3. Expose your API via [ngrok](https://ngrok.com) in development: `ngrok http 7101`
+4. Set `Channels:Telegram:WebhookUrl` to `https://<ngrok-subdomain>/api/webhook/telegram`
 
-Plugins are C# classes decorated with attributes:
-- `[Plugin]` attribute marks the class
-- `[KernelFunction]` marks callable methods
-- `[Description]` provides metadata for LLM
+Available commands: `/start`, `/help`, `/settings`, `/setkey`, `/setprovider`, `/search`, `/multi`
 
-### 3. Memory Providers
+See **[docs/TELEGRAM.md](docs/TELEGRAM.md)** for full setup guide.
 
-Abstract conversation storage:
-- **InMemoryProvider**: Fast, ephemeral
-- **SqliteMemoryProvider**: Persistent, survives restarts
+---
 
-### 4. Multi-Agent System
-
-Coordinate multiple specialized agents:
-- **Orchestrator**: Manages agent coordination
-- **Task Router**: LLM-based routing decisions
-- **Specialized Agents**: Domain experts (Research, Coding, Data, Writing)
-
-## Development Workflow
-
-### Adding a New Plugin
+## 🔌 Adding a Plugin
 
 ```csharp
+using Microsoft.SemanticKernel;
+using System.ComponentModel;
+using SkillBot.Infrastructure.Plugins;
+
 [Plugin(Name = "MyPlugin", Description = "Does something useful")]
 public class MyPlugin
 {
     [KernelFunction("my_function")]
-    [Description("Description for the LLM")]
-    public string MyFunction([Description("Parameter description")] string input)
-    {
-        return $"Processed: {input}";
-    }
+    [Description("Transforms the input text")]
+    public string Transform([Description("The text to transform")] string input)
+        => input.ToUpperInvariant();
 }
 
-// Register in Program.cs
+// Register in SkillBot.Api/Program.cs or SkillBot.Console/Program.cs
 pluginProvider.RegisterPlugin(new MyPlugin());
 ```
 
-### Adding a New Specialized Agent
-
-```csharp
-public class MySpecializedAgent : BaseSpecializedAgent
-{
-    public override string AgentId => "my-agent";
-    public override string Name => "My Specialist";
-    public override string Description => "Expert in X";
-    public override IReadOnlyList<string> Specializations => new[] { "keyword1", "keyword2" };
-
-    protected override string GetSystemPrompt()
-    {
-        return "You are a specialist in...";
-    }
-}
-
-// Register in ServiceCollectionExtensions
-services.AddSingleton<MySpecializedAgent>();
-```
-
-## Testing
-
-```bash
-# Run all tests
-dotnet test
-
-# Run with coverage
-dotnet test /p:CollectCoverage=true
-
-# Run specific test
-dotnet test --filter "FullyQualifiedName~CalculatorTests"
-```
-
-## Deployment
-
-### Docker
-
-```dockerfile
-FROM mcr.microsoft.com/dotnet/runtime:10.0
-COPY publish/ /app
-WORKDIR /app
-ENTRYPOINT ["dotnet", "SkillBot.Console.dll"]
-```
-
-### Standalone
-
-```bash
-# Publish self-contained
-dotnet publish -c Release -r win-x64 --self-contained
-
-# Run
-./SkillBot.Console.exe
-```
-
-## Performance Considerations
-
-- **Token Usage**: Each agent call consumes API tokens
-- **Parallel Execution**: Faster but uses more tokens
-- **SQLite**: Use WAL mode for concurrent access
-- **Caching**: Consider caching LLM responses for repeated queries
-
-## Security Considerations
-
-- ✅ API keys stored in user secrets (dev) or environment variables (prod)
-- ✅ Input validation on all plugin parameters
-- ⚠️ No rate limiting implemented yet
-- ⚠️ No authentication/authorization for multi-user scenarios
-
-## Troubleshooting
-
-### Common Issues
-
-**Issue**: Multi-agent mode hangs on startup
-**Solution**: Check ServiceCollectionExtensions for circular dependencies
-
-**Issue**: SQLite database locked
-**Solution**: Ensure WAL mode is enabled, only one writer at a time
-
-**Issue**: Plugin not being called
-**Solution**: Check Description attributes, ensure keywords match user intent
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Write tests for new functionality
-4. Ensure all tests pass
-5. Submit a pull request
-
-## License
-
-MIT License - See LICENSE file for details
-
-## Support
-
-- GitHub Issues: [repository-url]/issues
-- Documentation: [repository-url]/docs
-- Examples: [repository-url]/examples
-
-## Acknowledgments
-
-- Built with [Microsoft Semantic Kernel](https://github.com/microsoft/semantic-kernel)
-- Inspired by [OpenClaw](https://github.com/openclaw)
-- Uses OpenAI GPT models
+See **[docs/PLUGIN-DEVELOPMENT.md](docs/PLUGIN-DEVELOPMENT.md)** for a full guide.
 
 ---
 
-**Version**: 1.0.0  
-**Last Updated**: 2026-04-16  
-**Maintainer**: Your Name
+## 📚 Documentation
+
+| Document | Description |
+|---|---|
+| [docs/INSTALLATION.md](docs/INSTALLATION.md) | Step-by-step installation guide |
+| [docs/CONFIGURATION.md](docs/CONFIGURATION.md) | All configuration options |
+| [docs/API.md](docs/API.md) | Full REST API reference |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture deep-dive |
+| [docs/TELEGRAM.md](docs/TELEGRAM.md) | Telegram bot setup |
+| [docs/PLUGIN-DEVELOPMENT.md](docs/PLUGIN-DEVELOPMENT.md) | Writing custom plugins |
+| [docs/CHANNELS.md](docs/CHANNELS.md) | Adding new messaging channels |
+| [docs/USER_GUIDE_WEB.md](docs/USER_GUIDE_WEB.md) | Web UI user guide |
+| [docs/ADMIN_GUIDE.md](docs/ADMIN_GUIDE.md) | Administrator guide |
+| [docs/DEPLOYMENT_WEB.md](docs/DEPLOYMENT_WEB.md) | Web UI deployment (Docker/nginx/IIS) |
+| [docs/TROUBLESHOOTING_WEB.md](docs/TROUBLESHOOTING_WEB.md) | Web UI troubleshooting |
+| [docs/FAQ_WEB.md](docs/FAQ_WEB.md) | Frequently asked questions |
+| [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md) | WCAG 2.1 AA accessibility guide |
+| [docs/frontend/ARCHITECTURE.md](docs/frontend/ARCHITECTURE.md) | Blazor frontend architecture |
+| [docs/frontend/COMPONENTS.md](docs/frontend/COMPONENTS.md) | Component reference |
+| [docs/frontend/STATE_MANAGEMENT.md](docs/frontend/STATE_MANAGEMENT.md) | State management patterns |
+| [docs/frontend/API_INTEGRATION.md](docs/frontend/API_INTEGRATION.md) | API client reference |
+| [docs/frontend/STYLING.md](docs/frontend/STYLING.md) | MudBlazor theme and CSS guide |
+| [docs/frontend/DEVELOPMENT.md](docs/frontend/DEVELOPMENT.md) | Frontend developer setup |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contributor guide |
+| [CHANGELOG.md](CHANGELOG.md) | Version history |
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+```bash
+# Run integration tests
+powershell -File .\scripts\Test-SkillBot-AllFeatures.ps1
+
+# Focused test scripts
+powershell -File .\test-settings.ps1
+powershell -File .\test-console.ps1
+powershell -File .\test-database.ps1
+```
+
+---
+
+## 📄 License
+
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- [Microsoft Semantic Kernel](https://github.com/microsoft/semantic-kernel)
+- [Hangfire](https://www.hangfire.io/)
+- [Serilog](https://serilog.net/)
+- [Telegram.Bot](https://github.com/TelegramBots/Telegram.Bot)

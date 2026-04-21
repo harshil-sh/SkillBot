@@ -1,0 +1,102 @@
+<MudStack Spacing="4">
+    <MudCard Elevation="1">
+        <MudCardContent>
+            <MudStack Spacing="3">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                    <MudAvatar Color="Color.Primary" Size="Size.Large">
+                        <MudIcon Icon="@Icons.Material.Filled.SmartToy" />
+                    </MudAvatar>
+                    <div>
+                        <MudText Typo="Typo.h5">SkillBot</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">AI-powered conversational assistant</MudText>
+                    </div>
+                </MudStack>
+
+                <MudDivider />
+
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Version</MudText>
+                        <MudText Typo="Typo.body2"><b>1.0.0</b></MudText>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Framework</MudText>
+                        <MudText Typo="Typo.body2"><b>.NET 9 / Blazor WebAssembly</b></MudText>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">UI Library</MudText>
+                        <MudText Typo="Typo.body2"><b>MudBlazor 9.x</b></MudText>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">License</MudText>
+                        <MudText Typo="Typo.body2"><b>MIT</b></MudText>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">AI Backend</MudText>
+                        <MudText Typo="Typo.body2"><b>Microsoft Semantic Kernel</b></MudText>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Supported Providers</MudText>
+                        <MudText Typo="Typo.body2"><b>OpenAI · Claude · Gemini</b></MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudStack>
+        </MudCardContent>
+    </MudCard>
+
+    <MudText Typo="Typo.h6">Links</MudText>
+
+    <MudCard Elevation="1">
+        <MudCardContent>
+            <MudStack Spacing="2">
+                <MudButton Variant="Variant.Text"
+                           StartIcon="@Icons.Custom.Brands.GitHub"
+                           Href="https://github.com/harshil-sh/SkillBot"
+                           Target="_blank"
+                           Color="Color.Primary">
+                    GitHub Repository
+                </MudButton>
+                <MudButton Variant="Variant.Text"
+                           StartIcon="@Icons.Material.Filled.MenuBook"
+                           Href="https://github.com/harshil-sh/SkillBot/blob/main/README.md"
+                           Target="_blank"
+                           Color="Color.Primary">
+                    Documentation
+                </MudButton>
+                <MudButton Variant="Variant.Text"
+                           StartIcon="@Icons.Material.Filled.BugReport"
+                           Href="https://github.com/harshil-sh/SkillBot/issues"
+                           Target="_blank"
+                           Color="Color.Secondary">
+                    Report an Issue
+                </MudButton>
+            </MudStack>
+        </MudCardContent>
+    </MudCard>
+
+    <MudText Typo="Typo.h6">Credits</MudText>
+
+    <MudCard Elevation="1">
+        <MudCardContent>
+            <MudStack Spacing="1">
+                <MudText Typo="Typo.body2">
+                    Built with <MudLink Href="https://mudblazor.com" Target="_blank">MudBlazor</MudLink> for UI components.
+                </MudText>
+                <MudText Typo="Typo.body2">
+                    AI powered by <MudLink Href="https://github.com/microsoft/semantic-kernel" Target="_blank">Microsoft Semantic Kernel</MudLink>.
+                </MudText>
+                <MudText Typo="Typo.body2">
+                    Markdown rendering via <MudLink Href="https://github.com/xoofx/markdig" Target="_blank">Markdig</MudLink>.
+                </MudText>
+                <MudText Typo="Typo.body2">
+                    Local storage via <MudLink Href="https://github.com/Blazored/LocalStorage" Target="_blank">Blazored.LocalStorage</MudLink>.
+                </MudText>
+            </MudStack>
+        </MudCardContent>
+    </MudCard>
+
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+        SkillBot is open-source software released under the MIT license.
+        Contributions are welcome on GitHub.
+    </MudAlert>
+</MudStack>

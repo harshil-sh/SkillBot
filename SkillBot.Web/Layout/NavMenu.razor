@@ -1,0 +1,25 @@
+<MudNavMenu>
+    <AuthorizeView>
+        <Authorized>
+            <MudNavLink Href="/chat" Icon="@Icons.Material.Filled.Chat">Chat</MudNavLink>
+            <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings">Settings</MudNavLink>
+            <MudNavLink Href="/profile" Icon="@Icons.Material.Filled.Person">Profile</MudNavLink>
+            <AuthorizeView Roles="Admin">
+                <Authorized Context="adminCtx">
+                    <MudNavGroup Title="Admin" Icon="@Icons.Material.Filled.AdminPanelSettings" Expanded="false">
+                        <MudNavLink Href="/admin">Dashboard</MudNavLink>
+                        <MudNavLink Href="/admin/users">Users</MudNavLink>
+                        <MudNavLink Href="/admin/analytics">Analytics</MudNavLink>
+                        <MudNavLink Href="/admin/health">Health</MudNavLink>
+                        <MudNavLink Href="/admin/config">Configuration</MudNavLink>
+                        <MudNavLink Href="/admin/logs">Logs</MudNavLink>
+                    </MudNavGroup>
+                </Authorized>
+            </AuthorizeView>
+        </Authorized>
+        <NotAuthorized>
+            <MudNavLink Href="/login" Icon="@Icons.Material.Filled.Login">Login</MudNavLink>
+            <MudNavLink Href="/register" Icon="@Icons.Material.Filled.PersonAdd">Register</MudNavLink>
+        </NotAuthorized>
+    </AuthorizeView>
+</MudNavMenu>

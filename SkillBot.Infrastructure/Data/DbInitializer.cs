@@ -7,7 +7,10 @@ public static class DbInitializer
 {
     public static async Task InitializeAsync(SkillBotDbContext context)
     {
-        await context.Database.MigrateAsync();
+        if (context.Database.IsRelational())
+            await context.Database.MigrateAsync();
+        else
+            await context.Database.EnsureCreatedAsync();
 
         var hasUsers = await context.Users.AnyAsync();
         if (hasUsers)

@@ -1,0 +1,283 @@
+@page "/chat"
+@page "/"
+@inject ISkillBotApiClient ApiClient
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+
+<AuthorizeView>
+    <Authorized>
+        <div class="chat-layout">
+            @if (_showSearch)
+            {
+                <MudPaper Elevation="1" Class="search-bar pa-2">
+                    <MudTextField @bind-Value="_searchTerm"
+                                  Placeholder="Search messages..."
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Immediate="true"
+                                  Class="flex-grow-1" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="() => { _showSearch = false; _searchTerm = string.Empty; }" />
+                </MudPaper>
+            }
+
+            <div class="chat-container">
+                <MudDrawer @bind-Open="_sidebarOpen" Variant="DrawerVariant.Persistent" Elevation="0" Class="chat-sidebar">
+                    <ConversationList CurrentConversationId="@(_currentConversationId ?? string.Empty)"
+                                      OnConversationSelected="@LoadConversationAsync"
+                                      OnNewChat="@NewChatAsync"
+                                      @ref="_conversationList" />
+                </MudDrawer>
+
+                <div class="chat-main">
+                    <MudPaper Elevation="1" Class="chat-toolbar pa-2 d-flex align-center gap-2">
+                        <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                                       OnClick="() => _sidebarOpen = !_sidebarOpen" />
+                        <MudText Typo="Typo.subtitle1" Class="flex-grow-1">
+                            @(_currentConversationId != null ? "Conversation" : "New Chat")
+                        </MudText>
+                        <MudSwitch @bind-Value="_multiAgentMode" Color="Color.Secondary" Label="Multi-Agent" />
+                        @if (_multiAgentMode)
+                        {
+                            <MudChip T="string" Color="Color.Secondary" Size="Size.Small">🤖 Multi-Agent</MudChip>
+                        }
+                        <MudIconButton Icon="@Icons.Material.Filled.Search"
+                                       OnClick="() => _showSearch = !_showSearch" />
+                    </MudPaper>
+
+                    <div class="messages-container" id="messages-container">
+                        @{
+                            var displayMessages = string.IsNullOrWhiteSpace(_searchTerm)
+                                ? _messages
+                                : _messages.Where(m => m.Content.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
+                        }
+
+                        @if (!displayMessages.Any() && !_isTyping)
+                        {
+                            <div class="empty-chat">
+                                <MudIcon Icon="@Icons.Material.Filled.Chat" Size="Size.Large" Color="Color.Secondary" />
+                                <MudText Typo="Typo.h6" Color="Color.Secondary">Start a conversation</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Ask SkillBot anything!</MudText>
+                            </div>
+                        }
+
+                        @foreach (var msg in displayMessages)
+                        {
+                            var content = HighlightSearch(msg.Content);
+                            <ChatMessageComponent Content="@content"
+                                                  IsUser="@(msg.Role == "user")"
+                                                  Timestamp="@msg.Timestamp"
+                                                  IsLoading="false" />
+                        }
+
+                        <TypingIndicator Visible="@_isTyping" />
+                    </div>
+
+                    <MudPaper Elevation="2" Class="input-area pa-3">
+                        <MudGrid>
+                            <MudItem xs="11">
+                                <MudTextField @bind-Value="_inputMessage"
+                                              Placeholder="Type a message... (Enter to send, Shift+Enter for newline)"
+                                              Variant="Variant.Outlined"
+                                              Lines="3"
+                                              MaxLines="6"
+                                              Immediate="true"
+                                              Disabled="@_isTyping"
+                                              OnKeyDown="@OnInputKeyDownAsync" />
+                            </MudItem>
+                            <MudItem xs="1" Class="d-flex align-end justify-center pb-2">
+                                <MudIconButton Icon="@Icons.Material.Filled.Send"
+                                               Color="Color.Primary"
+                                               Variant="Variant.Filled"
+                                               OnClick="@SendMessageAsync"
+                                               Disabled="@(string.IsNullOrWhiteSpace(_inputMessage) || _isTyping)" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private List<ChatMessage> _messages = new();
+    private string? _currentConversationId;
+    private string _inputMessage = string.Empty;
+    private bool _isTyping;
+    private bool _multiAgentMode;
+    private bool _sidebarOpen = true;
+    private bool _showSearch;
+    private string _searchTerm = string.Empty;
+    private ConversationList? _conversationList;
+
+    private async Task SendMessageAsync()
+    {
+        var message = _inputMessage.Trim();
+        if (string.IsNullOrWhiteSpace(message) || _isTyping) return;
+
+        _inputMessage = string.Empty;
+        _messages.Add(new ChatMessage("user", message, DateTime.UtcNow));
+        _isTyping = true;
+        StateHasChanged();
+        await ScrollToBottomAsync();
+
+        try
+        {
+            var request = new ChatRequest(message, _currentConversationId);
+            ChatResponse response;
+
+            if (_multiAgentMode)
+                response = await ApiClient.SendMultiAgentMessageAsync(request);
+            else
+                response = await ApiClient.SendMessageAsync(request);
+
+            _currentConversationId = response.ConversationId;
+            _messages.Add(new ChatMessage("assistant", response.Message, response.Timestamp));
+
+            if (_conversationList != null)
+                await _conversationList.RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isTyping = false;
+            StateHasChanged();
+            await ScrollToBottomAsync();
+            await HighlightCodeAsync();
+        }
+    }
+
+    private async Task OnInputKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !e.ShiftKey)
+        {
+            await SendMessageAsync();
+        }
+    }
+
+    private async Task LoadConversationAsync(string conversationId)
+    {
+        _currentConversationId = conversationId;
+        _isTyping = true;
+        try
+        {
+            var messages = await ApiClient.GetConversationMessagesAsync(conversationId);
+            _messages = messages;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading conversation: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isTyping = false;
+            StateHasChanged();
+            await ScrollToBottomAsync();
+            await HighlightCodeAsync();
+        }
+    }
+
+    private async Task NewChatAsync()
+    {
+        _messages.Clear();
+        _currentConversationId = null;
+        _inputMessage = string.Empty;
+        StateHasChanged();
+        await Task.Yield();
+    }
+
+    private string HighlightSearch(string content)
+    {
+        if (string.IsNullOrWhiteSpace(_searchTerm)) return content;
+        return content.Replace(_searchTerm, $"<mark>{_searchTerm}</mark>", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task ScrollToBottomAsync()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("skillbotInterop.scrollToBottom", "messages-container");
+        }
+        catch { }
+    }
+
+    private async Task HighlightCodeAsync()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("skillbotInterop.highlightCode");
+        }
+        catch { }
+    }
+}
+
+<style>
+    .chat-layout {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 64px);
+        margin: -16px;
+    }
+
+    .search-bar {
+        padding: 8px;
+        display: flex;
+        gap: 8px;
+    }
+
+    .chat-container {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .chat-sidebar {
+        width: 280px;
+        flex-shrink: 0;
+        border-right: 1px solid var(--mud-palette-lines-default);
+        overflow-y: auto;
+    }
+
+    .chat-main {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .chat-toolbar {
+        flex-shrink: 0;
+        border-bottom: 1px solid var(--mud-palette-lines-default);
+    }
+
+    .messages-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .empty-chat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        gap: 8px;
+        opacity: 0.5;
+    }
+
+    .input-area {
+        flex-shrink: 0;
+    }
+</style>

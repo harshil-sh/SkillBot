@@ -1,0 +1,139 @@
+@page "/admin/config"
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<AuthorizeView>
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4 flex-wrap">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Tune" Color="Color.Primary" />
+                    <MudText Typo="Typo.h4">Configuration</MudText>
+                </MudStack>
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.ArrowBack" Href="/admin">
+                    Back
+                </MudButton>
+            </MudStack>
+
+            <MudAlert Severity="Severity.Info" Class="mb-4">
+                Configuration changes require API support. Contact your system administrator to apply changes.
+                This page shows a preview of available configuration options.
+            </MudAlert>
+
+            <MudExpansionPanels Elevation="2">
+                @* Rate Limits *@
+                <MudExpansionPanel Text="Rate Limits"
+                                   Icon="@Icons.Material.Filled.Speed">
+                    <MudStack Spacing="3" Class="pa-2">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Configure request rate limits per user per hour.
+                        </MudText>
+                        <MudNumericField @bind-Value="_requestsPerHour"
+                                         Label="Requests per hour (per user)"
+                                         Variant="Variant.Outlined"
+                                         Min="1" Max="10000"
+                                         ReadOnly="true" />
+                        <MudNumericField @bind-Value="_tokensPerHour"
+                                         Label="Tokens per hour (per user)"
+                                         Variant="Variant.Outlined"
+                                         Min="1000" Max="10000000"
+                                         ReadOnly="true" />
+                        <MudNumericField @bind-Value="_concurrentRequests"
+                                         Label="Max concurrent requests"
+                                         Variant="Variant.Outlined"
+                                         Min="1" Max="100"
+                                         ReadOnly="true" />
+                    </MudStack>
+                </MudExpansionPanel>
+
+                @* Feature Flags *@
+                <MudExpansionPanel Text="Feature Flags"
+                                   Icon="@Icons.Material.Filled.Flag">
+                    <MudStack Spacing="2" Class="pa-2">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Enable or disable features globally.
+                        </MudText>
+                        <MudSwitch @bind-Value="_multiAgentEnabled"
+                                   Label="Multi-agent mode"
+                                   Color="Color.Primary"
+                                   Disabled="true" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="ml-9">
+                            Allow users to use the multi-agent orchestration pipeline.
+                        </MudText>
+
+                        <MudSwitch @bind-Value="_webSearchEnabled"
+                                   Label="Web search (SerpApi)"
+                                   Color="Color.Primary"
+                                   Disabled="true" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="ml-9">
+                            Enable real-time web search via SerpApi plugin.
+                        </MudText>
+
+                        <MudSwitch @bind-Value="_cachingEnabled"
+                                   Label="Response caching"
+                                   Color="Color.Primary"
+                                   Disabled="true" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="ml-9">
+                            Cache LLM responses to reduce API costs.
+                        </MudText>
+                    </MudStack>
+                </MudExpansionPanel>
+
+                @* System Messages *@
+                <MudExpansionPanel Text="System Messages"
+                                   Icon="@Icons.Material.Filled.Message">
+                    <MudStack Spacing="3" Class="pa-2">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Configure the default system prompt sent to the AI.
+                        </MudText>
+                        <MudTextField @bind-Value="_systemPrompt"
+                                      Label="Default System Prompt"
+                                      Variant="Variant.Outlined"
+                                      Lines="6"
+                                      ReadOnly="true" />
+                        <MudTextField @bind-Value="_welcomeMessage"
+                                      Label="Welcome Message"
+                                      Variant="Variant.Outlined"
+                                      Lines="3"
+                                      ReadOnly="true" />
+                    </MudStack>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+
+            <MudStack Row="true" Justify="Justify.FlexEnd" Class="mt-4">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           OnClick="ConfirmSaveAsync"
+                           StartIcon="@Icons.Material.Filled.Save">
+                    Save Changes
+                </MudButton>
+            </MudStack>
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private int _requestsPerHour = 100;
+    private int _tokensPerHour = 500_000;
+    private int _concurrentRequests = 10;
+    private bool _multiAgentEnabled = true;
+    private bool _webSearchEnabled = false;
+    private bool _cachingEnabled = true;
+    private string _systemPrompt = "You are SkillBot, a helpful AI assistant. Be concise, accurate, and friendly.";
+    private string _welcomeMessage = "Hello! I'm SkillBot. How can I help you today?";
+
+    private async Task ConfirmSaveAsync()
+    {
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Save Configuration",
+            "Configuration changes require API support and may not take effect immediately. Contact your system administrator to apply these settings.",
+            yesText: "Understood",
+            cancelText: "Cancel");
+
+        if (confirmed == true)
+            Snackbar.Add("Configuration saved (preview only — contact admin to apply).", Severity.Info);
+    }
+}

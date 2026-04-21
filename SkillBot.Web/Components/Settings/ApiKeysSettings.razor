@@ -1,0 +1,233 @@
+@inject ISkillBotApiClient ApiClient
+@inject ISnackbar Snackbar
+
+<MudStack Spacing="4">
+    <MudText Typo="Typo.body1" Color="Color.Secondary">
+        Configure API keys for each AI provider. Keys are stored securely on the server and never returned in full.
+    </MudText>
+
+    @* OpenAI *@
+    <MudCard Elevation="1">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudText Typo="Typo.subtitle1"><b>OpenAI</b></MudText>
+                    @if (Settings?.HasOpenAiKey == true)
+                    {
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Icon="@Icons.Material.Filled.Check">Set</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="Color.Default" Size="Size.Small">Not set</MudChip>
+                    }
+                </MudStack>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudTextField @bind-Value="_openAiKey"
+                          Label="OpenAI API Key"
+                          Placeholder="sk-..."
+                          Variant="Variant.Outlined"
+                          InputType="@(_showOpenAi ? InputType.Text : InputType.Password)"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@(_showOpenAi ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                          OnAdornmentClick="@(() => _showOpenAi = !_showOpenAi)"
+                          FullWidth="true" />
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       OnClick="@(() => SaveKeyAsync("openai", _openAiKey))"
+                       Disabled="@(_saving == "openai" || string.IsNullOrWhiteSpace(_openAiKey))"
+                       StartIcon="@Icons.Material.Filled.Save">
+                @if (_saving == "openai")
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                Save Key
+            </MudButton>
+        </MudCardActions>
+    </MudCard>
+
+    @* Claude *@
+    <MudCard Elevation="1">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudText Typo="Typo.subtitle1"><b>Claude (Anthropic)</b></MudText>
+                    @if (Settings?.HasClaudeKey == true)
+                    {
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Icon="@Icons.Material.Filled.Check">Set</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="Color.Default" Size="Size.Small">Not set</MudChip>
+                    }
+                </MudStack>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudTextField @bind-Value="_claudeKey"
+                          Label="Claude API Key"
+                          Placeholder="sk-ant-..."
+                          Variant="Variant.Outlined"
+                          InputType="@(_showClaude ? InputType.Text : InputType.Password)"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@(_showClaude ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                          OnAdornmentClick="@(() => _showClaude = !_showClaude)"
+                          FullWidth="true" />
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       OnClick="@(() => SaveKeyAsync("claude", _claudeKey))"
+                       Disabled="@(_saving == "claude" || string.IsNullOrWhiteSpace(_claudeKey))"
+                       StartIcon="@Icons.Material.Filled.Save">
+                @if (_saving == "claude")
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                Save Key
+            </MudButton>
+        </MudCardActions>
+    </MudCard>
+
+    @* Gemini *@
+    <MudCard Elevation="1">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudText Typo="Typo.subtitle1"><b>Gemini (Google)</b></MudText>
+                    @if (Settings?.HasGeminiKey == true)
+                    {
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Icon="@Icons.Material.Filled.Check">Set</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="Color.Default" Size="Size.Small">Not set</MudChip>
+                    }
+                </MudStack>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudTextField @bind-Value="_geminiKey"
+                          Label="Gemini API Key"
+                          Placeholder="AIza..."
+                          Variant="Variant.Outlined"
+                          InputType="@(_showGemini ? InputType.Text : InputType.Password)"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@(_showGemini ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                          OnAdornmentClick="@(() => _showGemini = !_showGemini)"
+                          FullWidth="true" />
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       OnClick="@(() => SaveKeyAsync("gemini", _geminiKey))"
+                       Disabled="@(_saving == "gemini" || string.IsNullOrWhiteSpace(_geminiKey))"
+                       StartIcon="@Icons.Material.Filled.Save">
+                @if (_saving == "gemini")
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                Save Key
+            </MudButton>
+        </MudCardActions>
+    </MudCard>
+
+    @* Preferred Provider *@
+    <MudCard Elevation="1">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.subtitle1"><b>Preferred Provider</b></MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudSelect T="string" @bind-Value="_selectedProvider"
+                       Label="Preferred Provider"
+                       Variant="Variant.Outlined"
+                       FullWidth="true">
+                <MudSelectItem T="string" Value="@("openai")">OpenAI (GPT)</MudSelectItem>
+                <MudSelectItem T="string" Value="@("claude")">Claude (Anthropic)</MudSelectItem>
+                <MudSelectItem T="string" Value="@("gemini")">Gemini (Google)</MudSelectItem>
+            </MudSelect>
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       OnClick="SaveProviderAsync"
+                       Disabled="@_savingProvider"
+                       StartIcon="@Icons.Material.Filled.Save">
+                @if (_savingProvider)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                Save Provider
+            </MudButton>
+        </MudCardActions>
+    </MudCard>
+</MudStack>
+
+@code {
+    [Parameter] public UserSettingsResponse? Settings { get; set; }
+    [Parameter] public EventCallback OnSettingsChanged { get; set; }
+
+    private string _openAiKey = string.Empty;
+    private string _claudeKey = string.Empty;
+    private string _geminiKey = string.Empty;
+    private string _selectedProvider = "openai";
+    private string? _saving;
+    private bool _savingProvider;
+    private bool _showOpenAi;
+    private bool _showClaude;
+    private bool _showGemini;
+
+    protected override void OnParametersSet()
+    {
+        if (Settings != null)
+            _selectedProvider = Settings.PreferredProvider;
+    }
+
+    private async Task SaveKeyAsync(string provider, string key)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return;
+        _saving = provider;
+        try
+        {
+            await ApiClient.UpdateApiKeyAsync(new UpdateApiKeyRequest(provider, key));
+            Snackbar.Add($"{ProviderName(provider)} API key saved", Severity.Success);
+            switch (provider)
+            {
+                case "openai": _openAiKey = string.Empty; break;
+                case "claude": _claudeKey = string.Empty; break;
+                case "gemini": _geminiKey = string.Empty; break;
+            }
+            await OnSettingsChanged.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving {ProviderName(provider)} key: {ex.Message}", Severity.Error);
+        }
+        finally { _saving = null; }
+    }
+
+    private async Task SaveProviderAsync()
+    {
+        _savingProvider = true;
+        try
+        {
+            await ApiClient.UpdateProviderAsync(new UpdateProviderRequest(_selectedProvider));
+            Snackbar.Add($"Preferred provider set to {ProviderName(_selectedProvider)}", Severity.Success);
+            await OnSettingsChanged.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally { _savingProvider = false; }
+    }
+
+    private static string ProviderName(string p) => p switch
+    {
+        "openai" => "OpenAI",
+        "claude" => "Claude",
+        "gemini" => "Gemini",
+        _ => p
+    };
+}

@@ -17,6 +17,5 @@ public class UserSettingsResponse
     public bool HasOpenAiKey { get; set; }
     public bool HasClaudeKey { get; set; }
     public bool HasGeminiKey { get; set; }
-    public bool HasTelegramToken { get; set; }
     public bool HasSerpApiKey { get; set; }
 }

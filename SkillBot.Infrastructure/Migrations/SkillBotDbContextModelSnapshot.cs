@@ -122,9 +122,6 @@ namespace SkillBot.Infrastructure.Migrations
                     b.Property<string>("SerpApiKey")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("TelegramBotToken")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(100)

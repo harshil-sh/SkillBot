@@ -37,9 +37,6 @@ public class AuthService : IAuthService
             PasswordHash = passwordHash,
             CreatedAt = DateTime.UtcNow,
             IsActive = true,
-            TelegramBotToken = string.IsNullOrWhiteSpace(request.TelegramBotToken)
-                ? null
-                : request.TelegramBotToken.Trim(),
             SerpApiKey = string.IsNullOrWhiteSpace(request.SerpApiKey)
                 ? null
                 : request.SerpApiKey.Trim()

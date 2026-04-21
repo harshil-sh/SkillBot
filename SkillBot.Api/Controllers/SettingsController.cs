@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SkillBot.Api.Models.Responses;
 using SkillBot.Api.Models.Settings;
-using SkillBot.Api.Services;
+using SkillBot.Core.Services;
 using System.Security.Claims;
 
 namespace SkillBot.Api.Controllers;
@@ -33,7 +33,14 @@ public class SettingsController : ControllerBase
         try
         {
             var settings = await _settingsService.GetSettingsAsync(userId);
-            return Ok(settings);
+            return Ok(new UserSettingsResponse
+            {
+                PreferredProvider = settings.PreferredProvider,
+                HasOpenAiKey      = settings.HasOpenAiKey,
+                HasClaudeKey      = settings.HasClaudeKey,
+                HasGeminiKey      = settings.HasGeminiKey,
+                HasSerpApiKey     = settings.HasSerpApiKey
+            });
         }
         catch (KeyNotFoundException ex)
         {

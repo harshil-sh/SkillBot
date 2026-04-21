@@ -1,0 +1,20 @@
+@if (_error != null)
+{
+    <MudAlert Severity="Severity.Error" ShowCloseIcon="true" CloseIconClicked="@(() => _error = null)">
+        <MudText><b>Something went wrong</b></MudText>
+        <MudText Typo="Typo.body2">@_error</MudText>
+        <MudButton Size="Size.Small" OnClick="@(() => { _error = null; StateHasChanged(); })">Retry</MudButton>
+    </MudAlert>
+}
+else
+{
+    @ChildContent
+}
+
+@code {
+    private string? _error;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    public void SetError(string message) { _error = message; StateHasChanged(); }
+    public void Clear() { _error = null; StateHasChanged(); }
+}
