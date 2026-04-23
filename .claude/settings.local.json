@@ -2,7 +2,27 @@
   "permissions": {
     "allow": [
       "Bash(dotnet build:*)",
-      "Bash(grep -i \"\\\\.cs$\")"
+      "Bash(grep -i \"\\\\.cs$\")",
+      "Bash(dotnet run *)",
+      "Bash(taskkill /F /IM dotnet.exe)",
+      "Bash(cmd /c \"taskkill /F /IM dotnet.exe\")",
+      "Bash(cmd /c \"taskkill /F /PID 15684\")",
+      "Bash(cmd /c \"netstat -ano | findstr :5043\")",
+      "Bash(awk '{print $5}')",
+      "Bash(xargs -I{} cmd /c \"taskkill /F /PID {}\")",
+      "Bash(cmd /c \"for /f \\\\\"tokens=5\\\\\" %a in \\('netstat -ano ^| findstr :5188'\\) do taskkill /F /PID %a\")",
+      "Bash(cmd /c \"for /f \\\\\"tokens=5\\\\\" %a in \\('netstat -ano ^| findstr :5043'\\) do taskkill /F /PID %a\")",
+      "Bash(cmd *)",
+      "PowerShell(Stop-Process *)",
+      "PowerShell(netstat *)",
+      "PowerShell(ngrok config *)",
+      "PowerShell(ngrok http *)",
+      "PowerShell(Invoke-RestMethod http://localhost:4040/api/tunnels | ConvertTo-Json -Depth 5)",
+      "PowerShell(Invoke-RestMethod http://localhost:4040/api/tunnels | ConvertTo-Json -Depth 3)",
+      "Bash(sqlite3 skillbot.db \"SELECT Id, Username, Email, IsActive FROM Users;\")",
+      "Bash(docker compose up *)",
+      "Bash(docker compose logs *)",
+      "Bash(xargs grep *)"
     ]
   }
 }

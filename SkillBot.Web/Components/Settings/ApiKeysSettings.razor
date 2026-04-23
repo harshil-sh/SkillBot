@@ -24,7 +24,8 @@
             </CardHeaderContent>
         </MudCardHeader>
         <MudCardContent>
-            <MudTextField @bind-Value="_openAiKey"
+            <MudTextField Value="@_openAiKey"
+                          ValueChanged="@((string v) => _openAiKey = v)"
                           Label="OpenAI API Key"
                           Placeholder="sk-..."
                           Variant="Variant.Outlined"
@@ -32,6 +33,7 @@
                           Adornment="Adornment.End"
                           AdornmentIcon="@(_showOpenAi ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
                           OnAdornmentClick="@(() => _showOpenAi = !_showOpenAi)"
+                          Immediate="true"
                           FullWidth="true" />
         </MudCardContent>
         <MudCardActions>
@@ -66,7 +68,8 @@
             </CardHeaderContent>
         </MudCardHeader>
         <MudCardContent>
-            <MudTextField @bind-Value="_claudeKey"
+            <MudTextField Value="@_claudeKey"
+                          ValueChanged="@((string v) => _claudeKey = v)"
                           Label="Claude API Key"
                           Placeholder="sk-ant-..."
                           Variant="Variant.Outlined"
@@ -74,6 +77,7 @@
                           Adornment="Adornment.End"
                           AdornmentIcon="@(_showClaude ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
                           OnAdornmentClick="@(() => _showClaude = !_showClaude)"
+                          Immediate="true"
                           FullWidth="true" />
         </MudCardContent>
         <MudCardActions>
@@ -108,7 +112,8 @@
             </CardHeaderContent>
         </MudCardHeader>
         <MudCardContent>
-            <MudTextField @bind-Value="_geminiKey"
+            <MudTextField Value="@_geminiKey"
+                          ValueChanged="@((string v) => _geminiKey = v)"
                           Label="Gemini API Key"
                           Placeholder="AIza..."
                           Variant="Variant.Outlined"
@@ -116,6 +121,7 @@
                           Adornment="Adornment.End"
                           AdornmentIcon="@(_showGemini ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
                           OnAdornmentClick="@(() => _showGemini = !_showGemini)"
+                          Immediate="true"
                           FullWidth="true" />
         </MudCardContent>
         <MudCardActions>
@@ -198,6 +204,8 @@
                 case "claude": _claudeKey = string.Empty; break;
                 case "gemini": _geminiKey = string.Empty; break;
             }
+            StateHasChanged(); // flush key clear before parent re-render
+            await Task.Yield(); // let pending JS blur interop complete
             await OnSettingsChanged.InvokeAsync();
         }
         catch (Exception ex)

@@ -205,14 +205,33 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
     // Authorization = new[] { new MyAuthorizationFilter() }
 });
 
-app.UseHttpsRedirection();
 app.UseCors("AllowBlazorApp");
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 app.MapHealthChecks("/health");
+
+// JSON health endpoint consumed by the Blazor frontend
+app.MapGet("/api/health", async (Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckService healthService) =>
+{
+    var report = await healthService.CheckHealthAsync();
+    var body = new
+    {
+        status = report.Status.ToString(),
+        entries = report.Entries.Count > 0
+            ? report.Entries.ToDictionary(
+                e => e.Key,
+                e => new { status = e.Value.Status.ToString(), description = e.Value.Description })
+            : null
+    };
+    return Results.Json(body);
+}).AllowAnonymous();
 
 // Serve Blazor WASM static files — register all MIME types needed by .NET WASM runtime
 var blazorMimeTypes = new FileExtensionContentTypeProvider();

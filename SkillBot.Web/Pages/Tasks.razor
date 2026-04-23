@@ -1,0 +1,332 @@
+@page "/tasks"
+@attribute [Authorize]
+@inject ISkillBotApiClient ApiClient
+@inject ISnackbar Snackbar
+
+<MudText Typo="Typo.h5" Class="mb-4">Background Tasks</MudText>
+
+<MudGrid>
+    <MudItem xs="12" md="7">
+        <MudPaper Elevation="2" Class="pa-4">
+            <div class="d-flex align-center justify-space-between mb-3">
+                <MudText Typo="Typo.h6">Scheduled Tasks</MudText>
+                <MudTooltip Text="Refresh">
+                    <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                                   OnClick="LoadTasksAsync"
+                                   Disabled="@_loading" />
+                </MudTooltip>
+            </div>
+
+            @if (_loading)
+            {
+                <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-2" />
+            }
+
+            @if (!_loading && _tasks.Count == 0)
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                    No scheduled tasks yet. Use the form to create one.
+                </MudAlert>
+            }
+            else
+            {
+                <MudTable Items="_tasks" Dense="true" Hover="true" Striped="true" Breakpoint="Breakpoint.Sm">
+                    <HeaderContent>
+                        <MudTh>Task</MudTh>
+                        <MudTh>Type</MudTh>
+                        <MudTh>Schedule</MudTh>
+                        <MudTh>Status</MudTh>
+                        <MudTh></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Task">
+                            <MudTooltip Text="@context.Task">
+                                <MudText Typo="Typo.body2" Style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                    @context.Task
+                                </MudText>
+                            </MudTooltip>
+                            @if (context.IsMultiAgent)
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Class="mt-1">Multi-Agent</MudChip>
+                            }
+                        </MudTd>
+                        <MudTd DataLabel="Type">
+                            <MudChip T="string" Size="Size.Small" Color="@(context.IsRecurring ? Color.Tertiary : Color.Default)">
+                                @(context.IsRecurring ? "Recurring" : "One-time")
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Schedule">
+                            @if (context.IsRecurring && context.CronExpression is not null)
+                            {
+                                <MudText Typo="Typo.caption"><code>@context.CronExpression</code></MudText>
+                            }
+                            else if (context.ScheduledFor.HasValue)
+                            {
+                                <MudText Typo="Typo.caption">@context.ScheduledFor.Value.ToLocalTime().ToString("MMM d, HH:mm")</MudText>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">—</MudText>
+                            }
+                        </MudTd>
+                        <MudTd DataLabel="Status">
+                            <MudChip T="string" Size="Size.Small" Color="@StatusColor(context.Status)">
+                                @context.Status
+                            </MudChip>
+                        </MudTd>
+                        <MudTd>
+                            <MudTooltip Text="Cancel task">
+                                <MudIconButton Icon="@Icons.Material.Filled.Cancel"
+                                               Size="Size.Small"
+                                               Color="Color.Error"
+                                               Disabled="@(context.Status is "Cancelled" or "Completed" or "Failed")"
+                                               OnClick="() => CancelTaskAsync(context.TaskId)" />
+                            </MudTooltip>
+                            @if (!string.IsNullOrWhiteSpace(context.Result))
+                            {
+                                <MudTooltip Text="View result">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                                   Size="Size.Small"
+                                                   OnClick="() => ShowResult(context)" />
+                                </MudTooltip>
+                            }
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" md="5">
+        <MudPaper Elevation="2" Class="pa-4">
+            <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true">
+                <MudTabPanel Text="One-Time">
+                    <div class="pt-4">
+                        <MudTextField @bind-Value="_oneTimeTask"
+                                      Label="Task description"
+                                      Placeholder="E.g. Research AI trends and summarize"
+                                      Variant="Variant.Outlined"
+                                      Lines="3"
+                                      Class="mb-3" />
+                        <MudGrid Class="mb-3">
+                            <MudItem xs="7">
+                                <MudDatePicker @bind-Date="_oneTimeDate"
+                                               Label="Date"
+                                               Variant="Variant.Outlined" />
+                            </MudItem>
+                            <MudItem xs="5">
+                                <MudTimePicker @bind-Time="_oneTimeTime"
+                                               Label="Time"
+                                               Variant="Variant.Outlined"
+                                               AmPm="true" />
+                            </MudItem>
+                        </MudGrid>
+                        <MudSwitch @bind-Value="_oneTimeMultiAgent"
+                                   Label="Use Multi-Agent"
+                                   Color="Color.Secondary"
+                                   Class="mb-3" />
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   FullWidth="true"
+                                   StartIcon="@Icons.Material.Filled.Schedule"
+                                   OnClick="ScheduleOneTimeAsync"
+                                   Disabled="@_submitting">
+                            Schedule Task
+                        </MudButton>
+                    </div>
+                </MudTabPanel>
+
+                <MudTabPanel Text="Recurring">
+                    <div class="pt-4">
+                        <MudTextField @bind-Value="_recurringTask"
+                                      Label="Task description"
+                                      Placeholder="E.g. Generate daily report"
+                                      Variant="Variant.Outlined"
+                                      Lines="3"
+                                      Class="mb-3" />
+                        <MudTextField @bind-Value="_cronExpression"
+                                      Label="Cron expression"
+                                      Placeholder="0 9 * * *"
+                                      Variant="Variant.Outlined"
+                                      HelperText="Examples: 0 9 * * * (daily 9 AM) · 0 */6 * * * (every 6 h) · 0 0 * * 0 (weekly)"
+                                      Class="mb-3" />
+                        <MudSwitch @bind-Value="_recurringMultiAgent"
+                                   Label="Use Multi-Agent"
+                                   Color="Color.Secondary"
+                                   Class="mb-3" />
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   FullWidth="true"
+                                   StartIcon="@Icons.Material.Filled.Repeat"
+                                   OnClick="ScheduleRecurringAsync"
+                                   Disabled="@_submitting">
+                            Schedule Recurring Task
+                        </MudButton>
+                    </div>
+                </MudTabPanel>
+            </MudTabs>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@if (_resultTask is not null)
+{
+    <MudDialog @bind-Visible="_showResultDialog">
+        <TitleContent>
+            <MudText Typo="Typo.h6">Task Result</MudText>
+        </TitleContent>
+        <DialogContent>
+            <MudText Typo="Typo.caption" Color="Color.Secondary">@_resultTask.Task</MudText>
+            <MudDivider Class="my-2" />
+            <MudText Style="white-space:pre-wrap;">@_resultTask.Result</MudText>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="() => _showResultDialog = false">Close</MudButton>
+        </DialogActions>
+    </MudDialog>
+}
+
+@code {
+    private List<ScheduledTaskInfo> _tasks = new();
+    private bool _loading;
+    private bool _submitting;
+
+    private string _oneTimeTask = string.Empty;
+    private DateTime? _oneTimeDate;
+    private TimeSpan? _oneTimeTime;
+    private DateTime? OneTimeAt => _oneTimeDate.HasValue && _oneTimeTime.HasValue
+        ? _oneTimeDate.Value.Date + _oneTimeTime.Value
+        : null;
+    private bool _oneTimeMultiAgent;
+
+    private string _recurringTask = string.Empty;
+    private string _cronExpression = string.Empty;
+    private bool _recurringMultiAgent;
+
+    private bool _showResultDialog;
+    private ScheduledTaskInfo? _resultTask;
+
+    protected override async Task OnInitializedAsync() => await LoadTasksAsync();
+
+    private async Task LoadTasksAsync()
+    {
+        _loading = true;
+        try
+        {
+            _tasks = await ApiClient.GetAllTasksAsync();
+            _tasks = _tasks.OrderByDescending(t => t.CreatedAt).ToList();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load tasks: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task ScheduleOneTimeAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_oneTimeTask))
+        {
+            Snackbar.Add("Task description is required.", Severity.Warning);
+            return;
+        }
+        if (OneTimeAt is null)
+        {
+            Snackbar.Add("Both date and time are required.", Severity.Warning);
+            return;
+        }
+        if (OneTimeAt.Value.ToUniversalTime() <= DateTime.UtcNow)
+        {
+            Snackbar.Add("Execution time must be in the future.", Severity.Warning);
+            return;
+        }
+
+        _submitting = true;
+        try
+        {
+            var request = new ScheduleTaskRequest(_oneTimeTask, OneTimeAt.Value.ToUniversalTime(), _oneTimeMultiAgent);
+            var result = await ApiClient.ScheduleTaskAsync(request);
+            Snackbar.Add($"Task scheduled. ID: {result.TaskId}", Severity.Success);
+            _oneTimeTask = string.Empty;
+            _oneTimeDate = null;
+            _oneTimeTime = null;
+            _oneTimeMultiAgent = false;
+            await LoadTasksAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to schedule task: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private async Task ScheduleRecurringAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_recurringTask))
+        {
+            Snackbar.Add("Task description is required.", Severity.Warning);
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(_cronExpression))
+        {
+            Snackbar.Add("Cron expression is required.", Severity.Warning);
+            return;
+        }
+
+        _submitting = true;
+        try
+        {
+            var request = new ScheduleRecurringTaskRequest(_recurringTask, _cronExpression.Trim(), _recurringMultiAgent);
+            var result = await ApiClient.ScheduleRecurringTaskAsync(request);
+            Snackbar.Add($"Recurring task scheduled. ID: {result.TaskId}", Severity.Success);
+            _recurringTask = string.Empty;
+            _cronExpression = string.Empty;
+            _recurringMultiAgent = false;
+            await LoadTasksAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to schedule recurring task: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private async Task CancelTaskAsync(string taskId)
+    {
+        try
+        {
+            await ApiClient.CancelTaskAsync(taskId);
+            Snackbar.Add("Task cancelled.", Severity.Success);
+            await LoadTasksAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to cancel task: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void ShowResult(ScheduledTaskInfo task)
+    {
+        _resultTask = task;
+        _showResultDialog = true;
+    }
+
+    private static Color StatusColor(string status) => status switch
+    {
+        "Scheduled" => Color.Info,
+        "Running"   => Color.Warning,
+        "Completed" => Color.Success,
+        "Failed"    => Color.Error,
+        "Cancelled" => Color.Default,
+        _           => Color.Default
+    };
+}

@@ -29,7 +29,7 @@ public class JwtService : IJwtService
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id),
             new Claim(ClaimTypes.Email, user.Email),
-            new Claim("username", user.Username)
+            new Claim(ClaimTypes.Name, user.Username)
         };
 
         var token = new JwtSecurityToken(

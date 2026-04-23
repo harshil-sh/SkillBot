@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SkillBot.Core.Models;
 using SkillBot.Core.Services;
@@ -12,20 +13,17 @@ namespace SkillBot.Infrastructure.Channels;
 /// </summary>
 public abstract class BaseMessagingChannel : IMessagingChannel
 {
-    private readonly IChannelUserRepository _channelUserRepository;
-    private readonly IUserRepository _userRepository;
+    private readonly IServiceScopeFactory _scopeFactory;
     protected readonly ILogger Logger;
 
     public abstract string Name { get; }
     public abstract bool IsConfigured { get; }
 
     protected BaseMessagingChannel(
-        IChannelUserRepository channelUserRepository,
-        IUserRepository userRepository,
+        IServiceScopeFactory scopeFactory,
         ILogger logger)
     {
-        _channelUserRepository = channelUserRepository ?? throw new ArgumentNullException(nameof(channelUserRepository));
-        _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
         Logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -39,7 +37,10 @@ public abstract class BaseMessagingChannel : IMessagingChannel
         ArgumentException.ThrowIfNullOrWhiteSpace(channelUserId);
         ArgumentException.ThrowIfNullOrWhiteSpace(systemUserId);
 
-        if (await _channelUserRepository.ExistsAsync(Name, channelUserId))
+        using var scope = _scopeFactory.CreateScope();
+        var channelUserRepository = scope.ServiceProvider.GetRequiredService<IChannelUserRepository>();
+
+        if (await channelUserRepository.ExistsAsync(Name, channelUserId))
         {
             Logger.LogDebug(
                 "Channel user {ChannelUserId} already registered on {Channel}",
@@ -56,7 +57,7 @@ public abstract class BaseMessagingChannel : IMessagingChannel
             RegisteredAt = DateTime.UtcNow
         };
 
-        await _channelUserRepository.CreateAsync(channelUser);
+        await channelUserRepository.CreateAsync(channelUser);
 
         Logger.LogInformation(
             "Registered channel user {ChannelUserId} on {Channel} -> system user {SystemUserId}",
@@ -70,20 +71,32 @@ public abstract class BaseMessagingChannel : IMessagingChannel
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(channelUserId);
 
-        var channelUser = await _channelUserRepository.GetByChannelIdAsync(Name, channelUserId);
+        using var scope = _scopeFactory.CreateScope();
+        var channelUserRepository = scope.ServiceProvider.GetRequiredService<IChannelUserRepository>();
+        var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+
+        var channelUser = await channelUserRepository.GetByChannelIdAsync(Name, channelUserId);
         if (channelUser is null)
             return null;
 
-        return await _userRepository.GetByIdAsync(channelUser.SystemUserId);
+        return await userRepository.GetByIdAsync(channelUser.SystemUserId);
     }
 
     // ── Protected helpers ────────────────────────────────────────────────────
 
     /// <summary>Returns true when the channel user is already mapped to a system account.</summary>
-    protected Task<bool> IsUserRegisteredAsync(string channelUserId) =>
-        _channelUserRepository.ExistsAsync(Name, channelUserId);
+    protected async Task<bool> IsUserRegisteredAsync(string channelUserId)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var channelUserRepository = scope.ServiceProvider.GetRequiredService<IChannelUserRepository>();
+        return await channelUserRepository.ExistsAsync(Name, channelUserId);
+    }
 
     /// <summary>Looks up the <see cref="ChannelUser"/> mapping without resolving the full system user.</summary>
-    protected Task<ChannelUser?> GetChannelUserAsync(string channelUserId) =>
-        _channelUserRepository.GetByChannelIdAsync(Name, channelUserId);
+    protected async Task<ChannelUser?> GetChannelUserAsync(string channelUserId)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var channelUserRepository = scope.ServiceProvider.GetRequiredService<IChannelUserRepository>();
+        return await channelUserRepository.GetByChannelIdAsync(Name, channelUserId);
+    }
 }

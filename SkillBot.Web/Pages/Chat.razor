@@ -1,11 +1,10 @@
 @page "/chat"
 @page "/"
+@attribute [Authorize]
 @inject ISkillBotApiClient ApiClient
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 
-<AuthorizeView>
-    <Authorized>
         <div class="chat-layout">
             @if (_showSearch)
             {
@@ -98,11 +97,6 @@
                 </div>
             </div>
         </div>
-    </Authorized>
-    <NotAuthorized>
-        <RedirectToLogin />
-    </NotAuthorized>
-</AuthorizeView>
 
 @code {
     private List<ChatMessage> _messages = new();

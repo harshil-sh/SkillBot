@@ -10,7 +10,6 @@ public interface ISkillBotApiClient
     Task<List<ConversationSummary>> GetConversationsAsync();
     Task<List<ChatMessage>> GetConversationMessagesAsync(string conversationId);
     Task DeleteConversationAsync(string conversationId);
-    Task<UserSettingsResponse> GetSettingsAsync();
     Task UpdateApiKeyAsync(UpdateApiKeyRequest request);
     Task UpdateProviderAsync(UpdateProviderRequest request);
 
@@ -19,4 +18,11 @@ public interface ISkillBotApiClient
     Task<AdminStatsResponse> GetAdminStatsAsync();
     Task DeleteAdminUserAsync(string userId);
     Task<HealthCheckResponse?> GetHealthAsync();
+
+    // Tasks
+    Task<ScheduleTaskResponse> ScheduleTaskAsync(ScheduleTaskRequest request);
+    Task<ScheduleTaskResponse> ScheduleRecurringTaskAsync(ScheduleRecurringTaskRequest request);
+    Task<ScheduledTaskInfo> GetTaskAsync(string taskId);
+    Task<List<ScheduledTaskInfo>> GetAllTasksAsync();
+    Task CancelTaskAsync(string taskId);
 }

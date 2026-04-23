@@ -98,8 +98,12 @@ public class SkillBotApiClient : ISkillBotApiClient
     public Task<ChatResponse> SendMessageAsync(ChatRequest request) =>
         PostAsync<ChatResponse>("/api/chat", request);
 
-    public Task<ChatResponse> SendMultiAgentMessageAsync(ChatRequest request) =>
-        PostAsync<ChatResponse>("/api/multi-agent/chat", request);
+    public async Task<ChatResponse> SendMultiAgentMessageAsync(ChatRequest request)
+    {
+        var multiRequest = new MultiAgentRequest(request.Message, request.ConversationId);
+        var response = await PostAsync<MultiAgentResponse>("/api/multi-agent/chat", multiRequest);
+        return new ChatResponse(response.FinalResponse, response.ConversationId, DateTime.UtcNow);
+    }
 
     public Task<List<ConversationSummary>> GetConversationsAsync() =>
         GetAsync<List<ConversationSummary>>("/api/conversations");
@@ -110,11 +114,8 @@ public class SkillBotApiClient : ISkillBotApiClient
     public Task DeleteConversationAsync(string conversationId) =>
         DeleteAsync($"/api/conversations/{conversationId}");
 
-    public Task<UserSettingsResponse> GetSettingsAsync() =>
-        GetAsync<UserSettingsResponse>("/api/settings");
-
     public Task UpdateApiKeyAsync(UpdateApiKeyRequest request) =>
-        PutAsync("/api/settings/apikey", request);
+        PutAsync("/api/settings/api-key", request);
 
     public Task UpdateProviderAsync(UpdateProviderRequest request) =>
         PutAsync("/api/settings/provider", request);
@@ -127,6 +128,21 @@ public class SkillBotApiClient : ISkillBotApiClient
 
     public Task DeleteAdminUserAsync(string userId) =>
         DeleteAsync($"/api/admin/users/{userId}");
+
+    public Task<ScheduleTaskResponse> ScheduleTaskAsync(ScheduleTaskRequest request) =>
+        PostAsync<ScheduleTaskResponse>("/api/tasks/schedule", request);
+
+    public Task<ScheduleTaskResponse> ScheduleRecurringTaskAsync(ScheduleRecurringTaskRequest request) =>
+        PostAsync<ScheduleTaskResponse>("/api/tasks/recurring", request);
+
+    public Task<ScheduledTaskInfo> GetTaskAsync(string taskId) =>
+        GetAsync<ScheduledTaskInfo>($"/api/tasks/{taskId}");
+
+    public Task<List<ScheduledTaskInfo>> GetAllTasksAsync() =>
+        GetAsync<List<ScheduledTaskInfo>>("/api/tasks");
+
+    public Task CancelTaskAsync(string taskId) =>
+        DeleteAsync($"/api/tasks/{taskId}");
 
     public async Task<HealthCheckResponse?> GetHealthAsync()
     {

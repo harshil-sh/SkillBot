@@ -89,7 +89,7 @@
             var response = await ApiClient.LoginAsync(new LoginRequest(_email, _password));
             await AuthStateProvider.MarkUserAsAuthenticatedAsync(response.Token, response.Username);
             Snackbar.Add($"Welcome back, {response.Username}!", Severity.Success);
-            Navigation.NavigateTo("/chat");
+            Navigation.NavigateTo("/chat", forceLoad: true);
         }
         catch (HttpRequestException ex)
         {

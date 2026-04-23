@@ -2,6 +2,11 @@
     <Router AppAssembly="@typeof(App).Assembly" NotFoundPage="typeof(Pages.NotFound)">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <Authorizing>
+                    <div style="display:flex;justify-content:center;align-items:center;height:100vh">
+                        <p>Loading...</p>
+                    </div>
+                </Authorizing>
                 <NotAuthorized>
                     <RedirectToLogin />
                 </NotAuthorized>

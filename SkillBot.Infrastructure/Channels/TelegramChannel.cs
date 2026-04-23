@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 using SkillBot.Core.Services;
-using SkillBot.Infrastructure.Repositories;
 
 namespace SkillBot.Infrastructure.Channels;
 
@@ -23,11 +22,9 @@ public class TelegramChannel : BaseMessagingChannel
 
     public TelegramChannel(
         IConfiguration configuration,
-        IChannelUserRepository channelUserRepository,
-        IUserRepository userRepository,
         IServiceScopeFactory scopeFactory,
         ILogger<TelegramChannel> logger)
-        : base(channelUserRepository, userRepository, logger)
+        : base(scopeFactory, logger)
     {
         _botToken = TelegramConfigHelper.GetBotToken(configuration);
         _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
